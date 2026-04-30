@@ -18,6 +18,7 @@ import { useBabyStore } from '@entities/baby';
 
 interface RecordItemProps {
   record: RecordEntry;
+  shortName: string;
 }
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -57,7 +58,7 @@ const categoryLabels: Record<string, string> = {
   GROWTH: '성장',
 };
 
-export const RecordItem = ({ record }: RecordItemProps) => {
+export const RecordItem = ({ record, shortName }: RecordItemProps) => {
   const { babies } = useBabyStore();
   const baby = babies.find(b => b.id === record.babyId);
   const themeColor = baby?.colorTheme === 'mint' ? '#30D158' : '#FF375F';
@@ -126,7 +127,7 @@ export const RecordItem = ({ record }: RecordItemProps) => {
       </div>
       <div className="text-right">
         <span className="text-[10px] font-black px-2 py-1 rounded-lg" style={{ backgroundColor: `${themeColor}10`, color: themeColor }}>
-          {baby?.name || 'Unknown'}
+          {shortName}
         </span>
       </div>
     </div>

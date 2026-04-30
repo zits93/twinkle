@@ -1,14 +1,21 @@
 import { useRecordStore, RecordItem } from '@entities/record';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useBabyStore } from '@entities/baby';
 import type { RecordEntry } from '@shared/types/record';
 import { EditRecordModal } from '@features/edit-record/ui/EditRecordModal';
+import { getShortUniqueNames } from '@shared/lib/utils/name';
 
 export const RecordTimeline = () => {
   const records = useRecordStore((state) => state.records);
   const { babies } = useBabyStore();
   const [viewMode, setViewMode] = useState<string>('ALL');
   const [editingRecord, setEditingRecord] = useState<RecordEntry | null>(null);
+
+  // 모든 아기 이름들의 단축 매핑 계산
+  const babyNameMap = useMemo(() => {
+    const names = babies.map(b => b.name);
+    return getShortUniqueNames(names);
+  }, [babies]);
 
   const filteredRecords = records.filter((r: RecordEntry) => {
     if (viewMode === 'ALL') return true;
@@ -36,7 +43,7 @@ export const RecordTimeline = () => {
                 viewMode === baby.id ? 'bg-white text-black shadow-sm' : 'text-gray-400'
               }`}
             >
-              {baby.name.charAt(0)}
+              {babyNameMap[baby.name] || baby.name}
             </button>
           ))}
         </div>
@@ -50,11 +57,15 @@ export const RecordTimeline = () => {
         </div>
       ) : (
         <div className="space-y-1">
-          {filteredRecords.map((record) => (
-            <div key={record.id} onClick={() => setEditingRecord(record)} className="cursor-pointer">
-              <RecordItem record={record} />
-            </div>
-          ))}
+          {filteredRecords.map((record) => {
+            const baby = babies.find(b => b.id === record.babyId);
+            const shortName = baby ? (babyNameMap[baby.name] || baby.name) : 'Unknown';
+            return (
+              <div key={record.id} onClick={() => setEditingRecord(record)} className="cursor-pointer">
+                <RecordItem record={record} shortName={shortName} />
+              </div>
+            );
+          })}
         </div>
       )}
 
