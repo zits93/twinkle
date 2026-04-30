@@ -52,7 +52,7 @@ export interface BabyProfile {
   name: string;
   birthDate: string;
   gender: 'M' | 'F';
-  colorTheme: string; // 'mint' | 'coral'
+  colorTheme: string; // Hex color code
   profileImageUrl?: string;
   photoUrl?: string; // Keep for compatibility if used elsewhere
 }

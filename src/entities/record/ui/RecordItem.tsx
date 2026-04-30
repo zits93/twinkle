@@ -61,7 +61,7 @@ const categoryLabels: Record<string, string> = {
 export const RecordItem = ({ record, shortName }: RecordItemProps) => {
   const { babies } = useBabyStore();
   const baby = babies.find(b => b.id === record.babyId);
-  const themeColor = baby?.colorTheme === 'mint' ? '#30D158' : '#FF375F';
+  const themeColor = baby?.colorTheme || '#30D158';
 
   const renderValue = () => {
     const label = categoryLabels[record.category] || record.category;

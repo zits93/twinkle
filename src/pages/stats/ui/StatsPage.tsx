@@ -112,7 +112,7 @@ export const StatsPage = () => {
                 />
                 {babies.map((baby, index) => {
                   const key = index === 0 ? 'babyA' : 'babyB';
-                  const color = baby.colorTheme === 'mint' ? '#30D158' : '#FF375F';
+                  const color = baby.colorTheme;
                   return (
                     <Bar 
                       key={baby.id}
@@ -156,14 +156,13 @@ export const StatsPage = () => {
             <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">패턴 요약</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {babies.map((baby) => {
-                const isMint = baby.colorTheme === 'mint';
+                const color = baby.colorTheme;
                 return (
-                  <div key={baby.id} className={`p-5 rounded-3xl border shadow-sm ${
-                    isMint ? 'bg-green-50 border-green-100' : 'bg-pink-50 border-pink-100'
-                  }`}>
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${
-                      isMint ? 'text-green-500' : 'text-pink-500'
-                    }`}>
+                  <div key={baby.id} className="p-5 rounded-3xl border shadow-sm" style={{ 
+                    backgroundColor: `${color}08`, 
+                    borderColor: `${color}20` 
+                  }}>
+                    <span className="text-[10px] font-black uppercase tracking-widest" style={{ color }}>
                       평균 수유량 ({baby.name})
                     </span>
                     <p className="text-3xl font-black mt-2 text-[#1C1C1E]">

@@ -47,8 +47,20 @@ export const SettingsPage = () => {
     name: '',
     birthDate: new Date().toISOString().split('T')[0],
     gender: 'M' as 'M' | 'F',
-    colorTheme: 'mint'
+    colorTheme: '#30D158'
   });
+
+  const PRESET_COLORS = [
+    { name: 'Mint', hex: '#30D158' },
+    { name: 'Coral', hex: '#FF375F' },
+    { name: 'Blue', hex: '#007AFF' },
+    { name: 'Indigo', hex: '#5856D6' },
+    { name: 'Orange', hex: '#FF9500' },
+    { name: 'Teal', hex: '#64D2FF' },
+    { name: 'Purple', hex: '#BF5AF2' },
+    { name: 'Pink', hex: '#FF2D55' },
+    { name: 'Yellow', hex: '#FFD60A' },
+  ];
 
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || '양육자');
@@ -435,23 +447,23 @@ export const SettingsPage = () => {
                   </div>
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <span className="text-[11px] font-black text-gray-400 uppercase ml-1">테마 색상</span>
-                <div className="flex space-x-4">
-                  <button 
-                    onClick={() => setBabyForm({...babyForm, colorTheme: 'mint'})}
-                    className={`flex-1 p-4 rounded-2xl border-2 transition-all ${babyForm.colorTheme === 'mint' ? 'border-[#30D158] bg-[#30D158]/5' : 'border-transparent bg-gray-50'}`}
-                  >
-                    <div className="w-full h-2 bg-[#30D158] rounded-full mb-2" />
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">Mint (A)</span>
-                  </button>
-                  <button 
-                    onClick={() => setBabyForm({...babyForm, colorTheme: 'coral'})}
-                    className={`flex-1 p-4 rounded-2xl border-2 transition-all ${babyForm.colorTheme === 'coral' ? 'border-[#FF375F] bg-[#FF375F]/5' : 'border-transparent bg-gray-50'}`}
-                  >
-                    <div className="w-full h-2 bg-[#FF375F] rounded-full mb-2" />
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">Coral (B)</span>
-                  </button>
+                <div className="grid grid-cols-5 gap-3">
+                  {PRESET_COLORS.map((color) => (
+                    <button
+                      key={color.hex}
+                      onClick={() => setBabyForm({ ...babyForm, colorTheme: color.hex })}
+                      className={`w-10 h-10 rounded-full transition-all flex items-center justify-center border-2 ${
+                        babyForm.colorTheme === color.hex ? 'border-gray-200 scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                      style={{ backgroundColor: color.hex }}
+                    >
+                      {babyForm.colorTheme === color.hex && (
+                        <div className="w-2 h-2 bg-white rounded-full shadow-sm" />
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
               <div className="flex space-x-3 pt-6">
@@ -461,7 +473,12 @@ export const SettingsPage = () => {
                 >취소</button>
                 <button 
                   onClick={isAddBabyOpen ? handleAddBaby : handleUpdateBaby}
-                  className="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20"
+                  className="flex-1 py-4 text-white font-black rounded-2xl shadow-xl transition-all"
+                  style={{ 
+                    backgroundColor: babyForm.colorTheme,
+                    shadowColor: babyForm.colorTheme,
+                    boxShadow: `0 10px 25px ${babyForm.colorTheme}40`
+                  }}
                 >
                   {isAddBabyOpen ? '등록하기' : '저장하기'}
                 </button>
