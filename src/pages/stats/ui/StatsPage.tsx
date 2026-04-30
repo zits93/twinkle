@@ -110,47 +110,69 @@ export const StatsPage = () => {
                   iconType="circle" 
                   wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: 'bold' }} 
                 />
-                {babies[0] && (
-                  <Bar dataKey="babyA" name={babies[0].name} fill="#30D158" radius={[8, 8, 0, 0]} />
-                )}
-                {babies[1] && (
-                  <Bar dataKey="babyB" name={babies[1].name} fill="#FF375F" radius={[8, 8, 0, 0]} />
-                )}
+                {babies.map((baby, index) => {
+                  const key = index === 0 ? 'babyA' : 'babyB';
+                  const color = baby.colorTheme === 'mint' ? '#30D158' : '#FF375F';
+                  return (
+                    <Bar 
+                      key={baby.id}
+                      dataKey={key} 
+                      name={baby.name} 
+                      fill={color} 
+                      radius={[8, 8, 0, 0]} 
+                    />
+                  );
+                })}
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="space-y-6">
-          {babies.map((baby, idx) => (
-            <GrowthChart 
-              key={baby.id}
-              gender={baby.gender === 'F' ? 'female' : 'male'} 
-              babyName={baby.name} 
-              babyData={idx === 0 ? babyAWeightData : babyBWeightData} 
-            />
-          ))}
+          {babies.map((baby, idx) => {
+            // Filter real growth data for this baby
+            const babyGrowthRecords = records
+              .filter(r => r.babyId === baby.id && r.category === 'GROWTH' && r.subCategory === '체중')
+              .map(r => ({
+                month: Math.floor(differenceInMinutes(new Date(r.startTime), new Date(baby.birthDate)) / (60 * 24 * 30.44)), // Rough month calculation
+                weight: r.value
+              }))
+              .sort((a, b) => a.month - b.month);
+
+            return (
+              <GrowthChart 
+                key={baby.id}
+                gender={baby.gender === 'F' ? 'female' : 'male'} 
+                babyName={baby.name} 
+                colorTheme={baby.colorTheme}
+                babyData={babyGrowthRecords.length > 0 ? babyGrowthRecords : (idx === 0 ? babyAWeightData : babyBWeightData)} 
+              />
+            );
+          })}
         </div>
         
         {babies.length > 0 && (
           <div className="ios-glass p-8 border border-white">
             <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">패턴 요약</h3>
-            <div className="grid grid-cols-2 gap-6">
-              {babies.map((baby, idx) => (
-                <div key={baby.id} className={`p-5 rounded-3xl border shadow-sm ${
-                  idx === 0 ? 'bg-green-50 border-green-100' : 'bg-pink-50 border-pink-100'
-                }`}>
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${
-                    idx === 0 ? 'text-green-500' : 'text-pink-500'
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {babies.map((baby) => {
+                const isMint = baby.colorTheme === 'mint';
+                return (
+                  <div key={baby.id} className={`p-5 rounded-3xl border shadow-sm ${
+                    isMint ? 'bg-green-50 border-green-100' : 'bg-pink-50 border-pink-100'
                   }`}>
-                    평균 수유량 ({baby.name})
-                  </span>
-                  <p className="text-3xl font-black mt-2 text-[#1C1C1E]">
-                    {getAverageFeeding(baby.id)}
-                    <span className="text-sm ml-1 text-gray-400">ml</span>
-                  </p>
-                </div>
-              ))}
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${
+                      isMint ? 'text-green-500' : 'text-pink-500'
+                    }`}>
+                      평균 수유량 ({baby.name})
+                    </span>
+                    <p className="text-3xl font-black mt-2 text-[#1C1C1E]">
+                      {getAverageFeeding(baby.id)}
+                      <span className="text-sm ml-1 text-gray-400">ml</span>
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

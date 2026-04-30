@@ -14,15 +14,15 @@ interface GrowthChartProps {
   gender: 'male' | 'female';
   babyData: { month: number; weight: number }[];
   babyName: string;
+  colorTheme: 'mint' | 'coral';
 }
 
-export const GrowthChart = ({ gender, babyData, babyName }: GrowthChartProps) => {
+export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthChartProps) => {
   const standards = (growthData as any)[gender].weight;
-  const isMale = gender === 'male';
-  const themeColor = isMale ? '#007AFF' : '#FF375F';
+  const themeColor = colorTheme === 'mint' ? '#30D158' : '#FF375F';
   
   // Safe ID for SVG gradients (avoiding special characters/Korean)
-  const gradientId = `colorBaby-${gender}-${isMale ? 'boy' : 'girl'}`;
+  const gradientId = `colorBaby-${colorTheme}-${gender}`;
 
   // Combine standards and baby data for the chart
   const data = standards.map((s: any) => {
