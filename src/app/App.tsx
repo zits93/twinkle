@@ -25,8 +25,8 @@ function App() {
   }, [initializeAuth]);
 
   useEffect(() => {
-    const handleTabChange = (e: any) => {
-      setActiveTab(e.detail as TabType);
+    const handleTabChange = (e: Event) => {
+      setActiveTab((e as CustomEvent).detail as TabType);
     };
     window.addEventListener('changeTab', handleTabChange);
     return () => window.removeEventListener('changeTab', handleTabChange);

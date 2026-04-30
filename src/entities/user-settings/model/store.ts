@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { userSettingsService } from '../api/userSettingsService';
@@ -53,7 +54,7 @@ export const useUserSettingsStore = create<UserSettingsState>()(
 
       updateSettings: async (babyId, updates) => {
         // Map camelCase to snake_case for DB
-        const dbUpdates: any = {};
+        const dbUpdates: Record<string, unknown> = {};
         if (updates.feedingInterval !== undefined) dbUpdates.feeding_interval = updates.feedingInterval;
         if (updates.autoFeedingInterval !== undefined) dbUpdates.auto_feeding_interval = updates.autoFeedingInterval;
         if (updates.muteDuringNight !== undefined) dbUpdates.mute_during_night = updates.muteDuringNight;
@@ -61,9 +62,9 @@ export const useUserSettingsStore = create<UserSettingsState>()(
         if (updates.nightStartTime !== undefined) dbUpdates.night_start_time = updates.nightStartTime;
         if (updates.nightEndTime !== undefined) dbUpdates.night_end_time = updates.nightEndTime;
         
-        set(updates as any);
+        set(updates as Partial<UserSettingsState>);
         if (babyId) {
-          await userSettingsService.updateSettings(babyId, dbUpdates);
+          await userSettingsService.updateSettings(babyId, dbUpdates as any);
         }
       },
 

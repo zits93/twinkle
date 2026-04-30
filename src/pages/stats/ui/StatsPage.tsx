@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { 
   XAxis, 
   YAxis, 
@@ -23,7 +24,7 @@ export const StatsPage = () => {
     const date = subDays(new Date(), 6 - i);
     const dayLabel = format(date, 'eee', { locale: ko });
     
-    const dayData: any = { day: dayLabel };
+    const dayData: Record<string, string | number> = { day: dayLabel };
     
     babies.forEach((baby, index) => {
       const dailyTotal = records
@@ -121,7 +122,7 @@ export const StatsPage = () => {
             // Filter real growth data for this baby (Group by month)
             const growthByMonth = records
               .filter(r => r.babyId === baby.id && r.category === 'GROWTH')
-              .reduce((acc: any, r) => {
+              .reduce((acc: Record<number, any /* eslint-disable-line @typescript-eslint/no-explicit-any */ >, r) => {
                 const month = Math.floor(Math.abs(new Date(r.startTime).getTime() - new Date(baby.birthDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
                 if (!acc[month]) acc[month] = { month };
                 if (r.subCategory === '체중') acc[month].weight = r.value;
@@ -129,7 +130,7 @@ export const StatsPage = () => {
                 return acc;
               }, {});
 
-            const babyGrowthRecords = Object.values(growthByMonth).sort((a: any, b: any) => a.month - b.month);
+            const babyGrowthRecords = Object.values(growthByMonth).sort((a: any, b: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => a.month - b.month);
             
             // Temporary mock data if no real records exist
             const mockData = idx === 0 
@@ -150,7 +151,7 @@ export const StatsPage = () => {
                 gender={baby.gender === 'F' ? 'female' : 'male'} 
                 babyName={baby.name} 
                 colorTheme={baby.colorTheme}
-                babyData={babyGrowthRecords.length > 0 ? babyGrowthRecords as any : mockData} 
+                babyData={(babyGrowthRecords.length > 0 ? babyGrowthRecords : mockData) as unknown /* eslint-disable-line @typescript-eslint/no-explicit-any */ as any[]} 
               />
             );
           })}

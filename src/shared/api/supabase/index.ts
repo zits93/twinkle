@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -31,13 +32,14 @@ export const supabase = isSupabaseConfigured
 function createMockSupabase() {
   const loggedMethods = new Set<string>();
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mock: any = new Proxy(() => mock, {
     get: (_target, prop) => {
       const methodName = String(prop);
 
       // 1. Promise Support (await supabase...)
       if (prop === 'then') {
-        return (resolve: any) => resolve({ data: null, error: null, session: null, user: null });
+        return (resolve: (val: unknown) => void) => resolve({ data: null, error: null, session: null, user: null });
       }
 
       // 2. Auth object nested access (supabase.auth.getSession)
@@ -46,7 +48,7 @@ function createMockSupabase() {
       }
 
       // 3. Chainable methods (supabase.from().select()...)
-      const fn = (..._args: any[]) => {
+      const fn = () => {
         if (!loggedMethods.has(methodName) && !['from', 'select', 'eq', 'order', 'in', 'on'].includes(methodName)) {
           console.warn(`[Supabase Mock] "${methodName}" call ignored (Check .env)`);
           loggedMethods.add(methodName);

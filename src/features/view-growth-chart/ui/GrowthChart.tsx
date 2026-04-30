@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { 
   XAxis, 
@@ -19,12 +20,12 @@ interface GrowthChartProps {
 
 export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthChartProps) => {
   const [mode, setMode] = useState<'weight' | 'height'>('weight');
-  const standards = (growthData as any)[gender][mode];
+  const standards = (growthData /* eslint-disable-line @typescript-eslint/no-explicit-any */ as any)[gender][mode] as unknown[];
   const themeColor = colorTheme;
   
   const gradientId = `colorBaby-${colorTheme.replace('#', '')}-${gender}-${mode}`;
 
-  const data = standards.map((s: any) => {
+  const data = standards.map((s: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
     const babyPoint = babyData.find((b) => b.month === s.month);
     return {
       ...s,

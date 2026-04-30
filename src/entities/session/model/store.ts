@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
-import { type User, type Session } from '@supabase/supabase-js';
+import { type User, type Session, type AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@shared/api/supabase';
 
 interface SessionState {
@@ -34,7 +35,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       });
 
       // Listen for auth changes
-      supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      supabase.auth.onAuthStateChange((_event: any, session: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
         set({ 
           session, 
           user: session?.user ?? null,

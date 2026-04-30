@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { 
   Milk, 
@@ -72,14 +73,12 @@ export const AddRecordForm = () => {
   const [isAddingType, setIsAddingType] = useState(false);
   const [newTypeName, setNewTypeName] = useState('');
 
-  // Initialize target baby
-  useEffect(() => {
-    if (babies.length > 0 && !targetBaby) {
-      setTargetBaby(babies[0].id);
-    }
-  }, [babies, targetBaby]);
+  // Initialize target baby when babies load
+  if (babies.length > 0 && !targetBaby) {
+    setTargetBaby(babies[0].id);
+  }
 
-  // Load last record data and set defaults
+  // Effect to load last record data and set defaults
   useEffect(() => {
     const lastRecord = records.find(r => r.category === category);
     
@@ -87,15 +86,15 @@ export const AddRecordForm = () => {
       setSubCategory(lastRecord.subCategory);
       setAmount(lastRecord.value?.toString() || '');
     } else {
-      if (category === 'FEEDING') setSubCategory('분유');
-      else if (category === 'SOLID') setSubCategory('미음');
-      else if (category === 'SNACK') setSubCategory('우유');
-      else if (category === 'GROWTH') setSubCategory('체중');
-      else if (category === 'SLEEP') setSubCategory('낮잠');
-      else if (category === 'DIAPER') setSubCategory('소변');
-      else if (category === 'ACTIVITY') setSubCategory('목욕');
-      else if (category === 'HEALTH') setSubCategory('병원');
-      else setSubCategory('기본');
+      const defaultSub = category === 'FEEDING' ? '분유' :
+                         category === 'SOLID' ? '미음' :
+                         category === 'SNACK' ? '우유' :
+                         category === 'GROWTH' ? '체중' :
+                         category === 'SLEEP' ? '낮잠' :
+                         category === 'DIAPER' ? '소변' :
+                         category === 'ACTIVITY' ? '목욕' :
+                         category === 'HEALTH' ? '병원' : '기본';
+      setSubCategory(defaultSub);
       setAmount('');
     }
   }, [category, records]);

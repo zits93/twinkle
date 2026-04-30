@@ -41,7 +41,7 @@ export interface RecordEntry {
   startTime: string; // ISO string
   endTime?: string; // ISO string for sleep
   note?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   isDual?: boolean;
   syncGroupId?: string;
   createdAt: string;

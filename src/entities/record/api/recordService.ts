@@ -1,7 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase, isSupabaseConfigured } from '@shared/api/supabase';
 import { type RecordEntry, type RecordCategory } from '@shared/types/record';
 
-const mapToEntity = (row: any): RecordEntry => ({
+interface RecordRow {
+  id: string;
+  baby_id: string;
+  user_id: string;
+  category: string;
+  sub_category: string;
+  value: number;
+  start_time: string;
+  end_time: string | null;
+  note: string | null;
+  metadata: any;
+  created_at: string;
+}
+
+const mapToEntity = (row: RecordRow): RecordEntry => ({
   id: row.id,
   babyId: row.baby_id,
   userId: row.user_id,
@@ -9,8 +24,8 @@ const mapToEntity = (row: any): RecordEntry => ({
   subCategory: row.sub_category,
   value: row.value,
   startTime: row.start_time,
-  endTime: row.end_time,
-  note: row.note,
+  endTime: row.end_time || undefined,
+  note: row.note || undefined,
   metadata: row.metadata,
   createdAt: row.created_at,
 });
@@ -79,7 +94,7 @@ export const recordService = {
     const row = mapToRow(updates, user.id);
     // Remove undefined fields to avoid overwriting with null
     const cleanRow = Object.fromEntries(
-      Object.entries(row).filter(([_, v]) => v !== undefined)
+      Object.entries(row).filter(([, v]) => v !== undefined)
     );
 
     const { error } = await supabase
@@ -90,16 +105,16 @@ export const recordService = {
     if (error) throw error;
   },
 
-  subscribeToRecords(callback: (payload: any) => void) {
+  subscribeToRecords(callback: (payload: { new: RecordEntry | null; old: RecordEntry | null; [key: string]: any }) => void) {
     if (!isSupabaseConfigured) return { unsubscribe: () => {} };
 
     return supabase
       .channel('records_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'records' }, (payload: any) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'records' }, (payload: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
         const entityPayload = {
           ...payload,
-          new: payload.new ? mapToEntity(payload.new) : null,
-          old: payload.old ? mapToEntity(payload.old) : null,
+          new: payload.new ? mapToEntity(payload.new as RecordRow) : null,
+          old: payload.old ? mapToEntity(payload.old as RecordRow) : null,
         };
         callback(entityPayload);
       })

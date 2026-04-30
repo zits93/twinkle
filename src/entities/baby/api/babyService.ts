@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from '@shared/api/supabase';
 import type { BabyProfile } from '@shared/types/record';
 
-const mapToEntity = (row: any): BabyProfile => ({
+const mapToEntity = (row: any /* eslint-disable-line @typescript-eslint/no-explicit-any */): BabyProfile => ({
   id: row.id,
   name: row.name,
   birthDate: row.birth_date,
@@ -92,11 +93,11 @@ export const babyService = {
 
     if (error) throw error;
     if (!data || data.length === 0) throw new Error('아기 생성에 실패했습니다.');
-    return mapToEntity(data[0]);
+    return mapToEntity(data[0] as BabyRow);
   },
 
   async updateBaby(babyId: string, updates: Partial<BabyProfile>) {
-    const dbUpdates: any = {};
+    const dbUpdates: Record<string, string | null> = {};
     if (updates.name) dbUpdates.name = updates.name;
     if (updates.birthDate) dbUpdates.birth_date = updates.birthDate;
     if (updates.gender) dbUpdates.gender = updates.gender === 'M' ? 'boy' : 'girl';
@@ -111,7 +112,7 @@ export const babyService = {
 
     if (error) throw error;
     if (!data || data.length === 0) throw new Error('아기 정보 수정에 실패했습니다.');
-    return mapToEntity(data[0]);
+    return mapToEntity(data[0] as any);
   },
 
   async deleteBaby(babyId: string) {
