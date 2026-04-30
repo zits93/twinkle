@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Container, Box, Typography, Button, Stack } from '@mui/material'
 import { Activity, PieChart, Settings } from 'lucide-react'
 import { AddRecordForm } from '@features/add-record'
+import { RecordTimeline } from '@widgets/record-timeline'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'RECORD' | 'STATS' | 'SETTINGS'>('RECORD')
@@ -20,6 +21,7 @@ function App() {
       {activeTab === 'RECORD' && (
         <Box sx={{ animate: 'fadeIn 0.5s' }}>
           <AddRecordForm />
+          <RecordTimeline />
         </Box>
       )}
 
