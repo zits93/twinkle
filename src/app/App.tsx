@@ -1,13 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Container, Box, Typography, Button, Stack } from '@mui/material'
 import { Activity, PieChart, Settings, Home } from 'lucide-react'
 import { AddRecordForm } from '@features/add-record'
 import { RecordTimeline } from '@widgets/record-timeline'
 import { StatsPage } from '@pages/stats'
 import { Dashboard } from '@widgets/dashboard'
+import { useRecordStore } from '@entities/record'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'HOME' | 'RECORD' | 'STATS' | 'SETTINGS'>('HOME')
+  const initializeRecords = useRecordStore((state) => state.initializeRecords);
+
+  useEffect(() => {
+    // Mock baby IDs for now
+    initializeRecords(['baby-a', 'baby-b']);
+  }, [initializeRecords]);
 
   return (
     <Container maxWidth="sm" sx={{ py: 4, pb: 10 }}>
