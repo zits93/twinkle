@@ -64,16 +64,16 @@ export const RecordItem = ({ record }: RecordItemProps) => {
 
   const renderValue = () => {
     const label = categoryLabels[record.category] || record.category;
+    const subLabel = record.subCategory && record.subCategory !== '기본' ? record.subCategory : label;
     
     if (['FEEDING', 'SOLID', 'SNACK', 'WATER', 'MILK'].includes(record.category)) {
       const amount = record.value ? `${record.value}ml` : '';
-      const type = record.subCategory && record.subCategory !== '기본' ? `(${record.subCategory})` : '';
-      return `${label} ${amount} ${type}`.trim();
+      return `${subLabel} ${amount}`.trim();
     }
 
     if (record.category === 'GROWTH') {
       const unit = record.subCategory === '키' ? 'cm' : 'kg';
-      return `${record.subCategory} ${record.value}${unit}`;
+      return `${subLabel} ${record.value}${unit}`;
     }
     
     if (record.category === 'SLEEP') {
@@ -82,16 +82,16 @@ export const RecordItem = ({ record }: RecordItemProps) => {
         const h = Math.floor(mins / 60);
         const m = mins % 60;
         const duration = h > 0 ? `${h}시간 ${m}분` : `${m}분`;
-        return `${label} ${duration}`;
+        return `${subLabel} ${duration}`;
       }
-      return `${label} 중...`;
+      return `${subLabel} 중...`;
     }
 
     if (record.category === 'DIAPER') {
-      return `${label} (${record.subCategory || '기본'})`;
+      return subLabel;
     }
 
-    return `${label} (${record.subCategory || '기본'})`;
+    return subLabel;
   };
   
   return (
