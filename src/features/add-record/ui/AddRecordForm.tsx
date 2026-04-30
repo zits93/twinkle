@@ -17,14 +17,34 @@ import {
   Droplets, 
   Baby, 
   Plus,
-  Clock
+  Clock,
+  Waves,
+  Gamepad2,
+  Stethoscope,
+  Thermometer,
+  Pill,
+  Star
 } from 'lucide-react';
-import { useRecordStore } from '@entities/record/model/store';
+import { useRecordStore } from '@entities/record';
 import { BabyId, RecordCategory } from '@shared/types/record';
+
+const CATEGORIES = [
+  { id: 'FEEDING', label: '수유/식사', icon: <Milk size={20} />, color: '#70D6BC' },
+  { id: 'SLEEP', label: '수면', icon: <Moon size={20} />, color: '#9FA8DA' },
+  { id: 'DIAPER', label: '기저귀', icon: <Droplets size={20} />, color: '#FFAB91' },
+  { id: 'ACTIVITY', label: '활동/놀이', icon: <Gamepad2 size={20} />, color: '#FFF176' },
+  { id: 'HEALTH', label: '건강/병원', icon: <Stethoscope size={20} />, color: '#81C784' },
+  { id: 'CUSTOM', label: '커스텀', icon: <Star size={20} />, color: '#BA68C8' },
+];
+
+const FEEDING_TYPES = ['분유', '모유', '유축', '유축수유', '이유식', '간식', '우유', '물'];
+const ACTIVITY_TYPES = ['목욕', '터미타임', '놀이', '산책'];
+const HEALTH_TYPES = ['병원', '체온', '약', '접종'];
 
 export const AddRecordForm = () => {
   const [targetBaby, setTargetBaby] = useState<BabyId | 'BOTH'>('baby-a');
   const [category, setCategory] = useState<RecordCategory>('FEEDING');
+  const [subCategory, setSubCategory] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
   const [note, setNote] = useState<string>('');
   
@@ -41,7 +61,7 @@ export const AddRecordForm = () => {
     const baseRecord = {
       userId: 'user-1', // Mock user
       category,
-      subCategory: 'FORMULA', // Default for now
+      subCategory: subCategory || (category === 'SLEEP' ? 'NAP' : '기본'),
       value: amount ? parseFloat(amount) : undefined,
       startTime: new Date().toISOString(),
       note,
@@ -95,42 +115,75 @@ export const AddRecordForm = () => {
 
           {/* Category Selection */}
           <Grid container spacing={1}>
-            {[
-              { id: 'FEEDING', label: '수유', icon: <Milk size={20} />, color: '#70D6BC' },
-              { id: 'SLEEP', label: '수면', icon: <Moon size={20} />, color: '#9FA8DA' },
-              { id: 'DIAPER', label: '기저귀', icon: <Droplets size={20} />, color: '#FFAB91' },
-            ].map((item) => (
+            {CATEGORIES.map((item) => (
               <Grid size={4} key={item.id}>
                 <Button
                   fullWidth
                   variant={category === item.id ? 'contained' : 'outlined'}
-                  onClick={() => setCategory(item.id as RecordCategory)}
+                  onClick={() => {
+                    setCategory(item.id as RecordCategory);
+                    setSubCategory('');
+                  }}
                   sx={{ 
                     flexDirection: 'column', 
-                    py: 2,
+                    py: 1.5,
+                    minHeight: 64,
                     borderColor: category === item.id ? 'transparent' : 'rgba(255,255,255,0.1)',
                     bgcolor: category === item.id ? item.color : 'transparent',
+                    color: category === item.id ? 'black' : 'white',
                     '&:hover': { bgcolor: category === item.id ? item.color : 'rgba(255,255,255,0.05)' }
                   }}
                 >
                   {item.icon}
-                  <Typography variant="caption" sx={{ mt: 0.5 }}>{item.label}</Typography>
+                  <Typography variant="caption" sx={{ mt: 0.5, fontWeight: 'bold' }}>{item.label}</Typography>
                 </Button>
               </Grid>
             ))}
           </Grid>
 
-          {/* Input Fields */}
-          {category === 'FEEDING' && (
+          {/* Sub-Category Selection */}
+          {category !== 'CUSTOM' && (
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                세부 항목
+              </Typography>
+              <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 1 }}>
+                {(category === 'FEEDING' ? FEEDING_TYPES : 
+                  category === 'ACTIVITY' ? ACTIVITY_TYPES : 
+                  category === 'HEALTH' ? HEALTH_TYPES : ['기본']).map((type) => (
+                  <Chip 
+                    key={type}
+                    label={type} 
+                    onClick={() => setSubCategory(type)}
+                    color={subCategory === type ? 'primary' : 'default'}
+                    variant={subCategory === type ? 'contained' : 'outlined'}
+                  />
+                ))}
+              </Stack>
+            </Box>
+          )}
+
+          {category === 'CUSTOM' && (
             <TextField
-              label="수유량"
+              label="기록 이름"
+              fullWidth
+              value={subCategory}
+              onChange={(e) => setSubCategory(e.target.value)}
+              placeholder="예: 발톱 깎기"
+            />
+          )}
+
+          {/* Input Fields */}
+          {(category === 'FEEDING' || subCategory === '체온') && (
+            <TextField
+              label={subCategory === '체온' ? "온도" : "양"}
               fullWidth
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               slotProps={{
                 input: {
-                    endAdornment: <InputAdornment position="end">ml</InputAdornment>,
+                    endAdornment: <InputAdornment position="end">{subCategory === '체온' ? '℃' : 'ml'}</InputAdornment>,
                 }
               }}
             />
