@@ -3,6 +3,7 @@ import { Container, Box, Typography, Button, Stack } from '@mui/material'
 import { Activity, PieChart, Settings } from 'lucide-react'
 import { AddRecordForm } from '@features/add-record'
 import { RecordTimeline } from '@widgets/record-timeline'
+import { StatsPage } from '@pages/stats'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'RECORD' | 'STATS' | 'SETTINGS'>('RECORD')
@@ -25,7 +26,11 @@ function App() {
         </Box>
       )}
 
-      {activeTab !== 'RECORD' && (
+      {activeTab === 'STATS' && (
+        <StatsPage />
+      )}
+
+      {activeTab === 'SETTINGS' && (
         <Box sx={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Typography variant="h6" color="text.secondary">
             준비 중인 기능입니다 🚧
