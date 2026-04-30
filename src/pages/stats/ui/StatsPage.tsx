@@ -1,22 +1,17 @@
 import { 
-  LineChart, 
-  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer, 
-  Area, 
-  AreaChart,
   BarChart,
   Bar,
   Legend
 } from 'recharts';
-import { Box, Typography, Stack, Grid2 as Grid, Paper, useTheme } from '@mui/material';
+import { Box, Typography, Stack, Grid, Paper } from '@mui/material';
 import { GrowthChart } from '@features/view-growth-chart/ui/GrowthChart';
 
 export const StatsPage = () => {
-  const theme = useTheme();
   
   // Mock data for Daily Feeding Amount
   const feedingData = [

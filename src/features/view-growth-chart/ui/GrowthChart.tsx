@@ -1,5 +1,4 @@
 import { 
-  LineChart, 
   Line, 
   XAxis, 
   YAxis, 
@@ -7,10 +6,9 @@ import {
   Tooltip, 
   ResponsiveContainer, 
   Area, 
-  AreaChart,
-  ReferenceLine
+  AreaChart
 } from 'recharts';
-import { Box, Typography, Paper, useTheme } from '@mui/material';
+import { Typography, Paper, useTheme } from '@mui/material';
 import growthData from '@shared/assets/data/growth_standards.json';
 
 interface GrowthChartProps {

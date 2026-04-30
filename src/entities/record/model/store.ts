@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { RecordEntry, BabyId } from '@shared/types/record';
+import type { RecordEntry } from '@shared/types/record';
 
 interface RecordState {
   records: RecordEntry[];

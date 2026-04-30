@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   Box, 
   Button, 
@@ -7,9 +7,10 @@ import {
   TextField, 
   Typography, 
   Stack, 
-  Grid2 as Grid,
+  Grid,
   Paper,
-  InputAdornment
+  InputAdornment,
+  Chip
 } from '@mui/material';
 import { 
   Milk, 
@@ -17,16 +18,12 @@ import {
   Droplets, 
   Baby, 
   Plus,
-  Clock,
-  Waves,
   Gamepad2,
   Stethoscope,
-  Thermometer,
-  Pill,
   Star
 } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
-import { BabyId, RecordCategory } from '@shared/types/record';
+import type { BabyId, RecordCategory } from '@shared/types/record';
 
 const CATEGORIES = [
   { id: 'FEEDING', label: '수유/식사', icon: <Milk size={20} />, color: '#70D6BC' },
@@ -160,7 +157,7 @@ export const AddRecordForm = () => {
                     label={type} 
                     onClick={() => setSubCategory(type)}
                     color={subCategory === type ? 'primary' : 'default'}
-                    variant={subCategory === type ? 'contained' : 'outlined'}
+                    variant={subCategory === type ? 'filled' : 'outlined'}
                   />
                 ))}
               </Stack>

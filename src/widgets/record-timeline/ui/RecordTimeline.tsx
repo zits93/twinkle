@@ -1,12 +1,13 @@
 import { Box, Typography, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useRecordStore, RecordItem } from '@entities/record';
 import { useState } from 'react';
+import type { RecordEntry } from '@shared/types/record';
 
 export const RecordTimeline = () => {
   const records = useRecordStore((state) => state.records);
   const [viewMode, setViewMode] = useState<'ALL' | 'BABY_A' | 'BABY_B'>('ALL');
 
-  const filteredRecords = records.filter((r) => {
+  const filteredRecords = records.filter((r: RecordEntry) => {
     if (viewMode === 'ALL') return true;
     if (viewMode === 'BABY_A') return r.babyId === 'baby-a';
     if (viewMode === 'BABY_B') return r.babyId === 'baby-b';
@@ -15,7 +16,7 @@ export const RecordTimeline = () => {
 
   return (
     <Box sx={{ mt: 4 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+      <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
           활동 타임라인
         </Typography>

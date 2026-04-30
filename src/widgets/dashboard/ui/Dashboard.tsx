@@ -1,5 +1,5 @@
-import { Box, Typography, Stack, Grid2 as Grid, Paper, IconButton, Chip, Alert } from '@mui/material';
-import { Baby, Clock, Milk, Moon, Droplets, ChevronRight, AlertCircle } from 'lucide-react';
+import { Box, Typography, Stack, Paper, Chip } from '@mui/material';
+import { Baby, Clock, Milk, Moon, Droplets, AlertCircle } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
 import { useFeedingStatus } from '@features/notify-feeding';
 import { format, differenceInMinutes } from 'date-fns';
@@ -17,7 +17,7 @@ export const Dashboard = () => {
     const lastFeed = getLatestRecord(babyId, 'FEEDING');
     const lastSleep = getLatestRecord(babyId, 'SLEEP');
     const lastDiaper = getLatestRecord(babyId, 'DIAPER');
-    const { status, minutesLeft } = useFeedingStatus(babyId);
+    const { status } = useFeedingStatus(babyId);
 
     const minutesSinceFeed = lastFeed 
       ? differenceInMinutes(new Date(), new Date(lastFeed.startTime)) 
@@ -25,7 +25,7 @@ export const Dashboard = () => {
 
     return (
       <Paper className="glass" sx={{ p: 2, flex: 1, borderTop: 4, borderColor: color }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+        <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{name}</Typography>
           <Baby size={18} color={color} />
         </Stack>
@@ -41,7 +41,7 @@ export const Dashboard = () => {
 
         <Stack spacing={1.5}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Milk size={14} color="rgba(255,255,255,0.6)" />
               <Typography variant="caption" color="text.secondary">마지막 수유</Typography>
             </Stack>
@@ -51,7 +51,7 @@ export const Dashboard = () => {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Moon size={14} color="rgba(255,255,255,0.6)" />
               <Typography variant="caption" color="text.secondary">마지막 수면</Typography>
             </Stack>
@@ -61,7 +61,7 @@ export const Dashboard = () => {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <Droplets size={14} color="rgba(255,255,255,0.6)" />
               <Typography variant="caption" color="text.secondary">마지막 기저귀</Typography>
             </Stack>
@@ -88,7 +88,7 @@ export const Dashboard = () => {
 
       {/* Sync Status Card */}
       <Paper className="glass" sx={{ p: 2, mb: 4, bgcolor: 'rgba(255,255,255,0.03)' }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
           <Box>
             <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>쌍둥이 싱크 상태</Typography>
             <Typography variant="caption" color="text.secondary">두 아이의 수면 시간이 80% 일치합니다.</Typography>

@@ -1,6 +1,6 @@
 import { Box, Typography, Stack, Chip } from '@mui/material';
 import { Milk, Moon, Droplets, Baby } from 'lucide-react';
-import { RecordEntry } from '@shared/types/record';
+import type { RecordEntry } from '@shared/types/record';
 import { format } from 'date-fns';
 
 interface RecordItemProps {
@@ -30,7 +30,7 @@ export const RecordItem = ({ record }: RecordItemProps) => {
         justifyContent: 'space-between'
       }}
     >
-      <Stack direction="row" spacing={2} alignItems="center">
+      <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
         <Box sx={{ color: isBabyA ? 'primary.main' : 'secondary.main' }}>
           {categoryIcons[record.category] || <Baby size={16} />}
         </Box>

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { BabyProfile } from '@shared/types/record';
+import type { BabyProfile } from '@shared/types/record';
 
 interface BabyState {
   babies: BabyProfile[];

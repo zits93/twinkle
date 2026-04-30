@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { Container, Box, Typography, Button, Stack } from '@mui/material'
 import { Activity, PieChart, Settings, Home } from 'lucide-react'
 import { AddRecordForm } from '@features/add-record'
 import { RecordTimeline } from '@widgets/record-timeline'
@@ -43,7 +45,7 @@ function App() {
 
       {/* Bottom Navigation */}
       <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, bgcolor: 'background.paper', p: 1, borderTop: 1, borderColor: 'divider', zIndex: 1000 }}>
-        <Stack direction="row" justifyContent="space-around">
+        <Stack direction="row" sx={{ justifyContent: "space-around" }}>
           <Button 
             onClick={() => setActiveTab('HOME')}
             color={activeTab === 'HOME' ? 'primary' : 'inherit'}
