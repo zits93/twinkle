@@ -70,6 +70,26 @@ export const recordService = {
     if (error) throw error;
   },
 
+  async updateRecord(id: string, updates: Partial<RecordEntry>) {
+    if (!isSupabaseConfigured) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('인증이 필요합니다.');
+
+    const row = mapToRow(updates, user.id);
+    // Remove undefined fields to avoid overwriting with null
+    const cleanRow = Object.fromEntries(
+      Object.entries(row).filter(([_, v]) => v !== undefined)
+    );
+
+    const { error } = await supabase
+      .from('records')
+      .update(cleanRow)
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
   subscribeToRecords(callback: (payload: any) => void) {
     if (!isSupabaseConfigured) return { unsubscribe: () => {} };
 

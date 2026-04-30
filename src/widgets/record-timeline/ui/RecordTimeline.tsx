@@ -2,11 +2,13 @@ import { useRecordStore, RecordItem } from '@entities/record';
 import { useState } from 'react';
 import { useBabyStore } from '@entities/baby';
 import type { RecordEntry } from '@shared/types/record';
+import { EditRecordModal } from '@features/edit-record/ui/EditRecordModal';
 
 export const RecordTimeline = () => {
   const records = useRecordStore((state) => state.records);
   const { babies } = useBabyStore();
   const [viewMode, setViewMode] = useState<string>('ALL');
+  const [editingRecord, setEditingRecord] = useState<RecordEntry | null>(null);
 
   const filteredRecords = records.filter((r: RecordEntry) => {
     if (viewMode === 'ALL') return true;
@@ -41,7 +43,7 @@ export const RecordTimeline = () => {
       </div>
 
       {filteredRecords.length === 0 ? (
-        <div className="ios-glass p-12 text-center border-dashed border-gray-200">
+        <div className="ios-glass p-12 text-center border border-white border-dashed border-gray-200">
           <p className="text-sm font-medium text-gray-300">
             기록된 활동이 없습니다.
           </p>
@@ -49,9 +51,18 @@ export const RecordTimeline = () => {
       ) : (
         <div className="space-y-1">
           {filteredRecords.map((record) => (
-            <RecordItem key={record.id} record={record} />
+            <div key={record.id} onClick={() => setEditingRecord(record)} className="cursor-pointer">
+              <RecordItem record={record} />
+            </div>
           ))}
         </div>
+      )}
+
+      {editingRecord && (
+        <EditRecordModal 
+          record={editingRecord} 
+          onClose={() => setEditingRecord(null)} 
+        />
       )}
     </div>
   );

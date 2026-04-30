@@ -1,144 +1,77 @@
 Twinkle is a specialized parenting record application designed specifically for parents of twins. It focuses on reducing the cognitive load and repetitive tasks associated with tracking two babies simultaneously.
 
 ## 💡 개발 가이드라인 (Dev Guidelines)
-- **커밋 전 빌드 확인**: 코드 수정(단위 변경 등) 완료 후 커밋하기 전에 반드시 `npm run build`를 실행하여 빌드 오류가 없는지 확인합니다.
+- **커밋 전 빌드 확인**: 코드 수정 완료 후 커밋하기 전에 반드시 `npm run build`를 실행하여 빌드 오류가 없는지 확인합니다.
 - **FSD 아키텍처 준수**: 모든 컴포넌트와 로직은 Feature-Sliced Design 구조에 맞게 배치합니다.
+- **Lightweight & Pure**: MUI 등 무거운 외부 라이브러리 사용을 지양하고, Tailwind CSS와 순수 HTML/CSS로 iOS 스타일을 지향합니다.
 
 ## Phase 1: 핵심 기능 정의 (쌍둥이 특화 포인트)
 
 ### 1. 원클릭 듀얼 기록 (Dual Recording)
-- **문제점**: 쌍둥이 부모는 종종 두 아이를 동시에 수유하거나 기저귀를 갑니다. 같은 내용을 두 번 입력하는 것은 번거롭습니다.
-- **해결책**: 모든 기록 폼에 'A아기', 'B아기', '둘 다' 버튼을 배치합니다.
-- **구현**: '둘 다' 선택 시, 백엔드에서 동일한 데이터를 각 아기의 ID로 두 번 생성하여 저장합니다.
+- **해결책**: 모든 기록 폼에 'A아기', 'B아기', '둘 다' 버튼을 배치하여 동시 기록 지원.
 
 ### 2. 통합/분할 먹놀잠 대시보드 (Dashboard)
-- **문제점**: 두 아이의 패턴을 비교하기 위해 화면을 왔다 갔다 하는 것은 직관적이지 않습니다.
-- **해결책**: 
-    - **오버레이 뷰**: 하나의 타임라인에 A와 B의 이벤트를 색상별로 겹쳐서 표시하여 수면 싱크 등을 한눈에 파악합니다.
-    - **좌우 분할 뷰**: 모바일 가로 모드나 대화면에서 두 아이의 현재 상태(마지막 수유 시간, 기저귀 상태 등)를 동시에 확인합니다.
+- **해결책**: 오버레이 뷰와 좌우 분할 뷰를 통해 두 아이의 패턴을 직관적으로 비교.
 
 ### 3. 공동 양육자 실시간 동기화
-- **문제점**: 엄마, 아빠, 조부모님이 각자 기록할 때 데이터가 꼬이거나 늦게 반영됩니다.
-- **해결책**: Supabase Realtime을 활용하여 한 명이 기록하는 즉시 모든 연결된 기기의 대시보드가 업데이트됩니다.
-
-### 4. 스마트 수유 알림 (Smart Notifications)
-- **기능**: 마지막 수유 시간으로부터 설정된 주기(예: 3~4시간)가 지나면 배고픔 알림을 발송합니다.
-- **밤잠 모드**: 밤잠(Night Sleep)으로 기록된 시간 동안은 자동으로 수유 알림을 무음 처리하거나 끄는 기능을 제공합니다.
-
-### 5. 성장 통계 및 시각화 (Growth & Stats)
-- **성장 곡선**: 질병관리청/WHO 성장 도표 데이터를 기반으로 아이의 키, 몸무게가 상위 몇 %인지 백분위수를 계산하여 그래프로 보여줍니다.
-- **패턴 분석**: 일주일 단위의 수유량 변화, 수면 시간 변화, 수유 간격 등을 시각화하여 아이의 성장 패턴을 직관적으로 파악하게 합니다.
+- **해결책**: Supabase Realtime을 활용한 즉각적인 데이터 업데이트.
 
 ---
 
 ## Phase 2: 기술 스택 선정 (Web App)
 
 ### Frontend
-- **Architecture**: **FSD (Feature-Sliced Design)** - 모듈화된 폴더 구조로 유지보수성 및 확장성 확보.
-- **Framework**: **React (Vite)** - 빠른 개발 속도와 최적화된 성능.
-- **Styling**: **MUI (Material UI)** + **Tailwind** - 친숙한 모바일 조작감과 커스텀 디자인의 조화.
-- **Visualization**: **Recharts** - 성장 곡선 및 패턴 시각화.
-- **State Management**: **Zustand** - 경량화된 글로벌 상태 관리.
-- **PWA**: 모바일 앱처럼 홈 화면에 추가하여 접근성 향상.
+- **Architecture**: **FSD (Feature-Sliced Design)**
+- **Framework**: **React (Vite)**
+- **Styling**: **Pure Tailwind CSS v4** (MUI 의존성 제거 완료)
+- **Visualization**: **Recharts**
+- **State Management**: **Zustand**
+- **PWA**: 오프라인 지원 및 홈 화면 추가 지원.
 
 ### Backend & Database
-- **Platform**: **Supabase** (BaaS)
-    - **Auth**: 카카오, 구글 소셜 로그인 및 이메일 링크 로그인.
-    - **Database**: PostgreSQL (아기 프로필, 기록 데이터).
-    - **Realtime**: 실시간 데이터 동기화.
-    - **Storage**: 아기 프로필 사진 및 성장 기록 사진 저장.
+- **Platform**: **Supabase** (Auth, Database, Realtime)
 
 ---
 
-## Phase 3: UI/UX 디자인 전략
+## Phase 3: UI/UX 디자인 전략 (Refined)
 
-### 1. 색상 분리 (Color Coding)
-- **첫째(A)**: 민트/블루 계열 (Cool)
-- **둘째(B)**: 코랄/핑크 계열 (Warm)
-- 배경색이나 테두리, 아이콘 색상을 통해 현재 어떤 아이의 데이터를 입력/확인 중인지 무의식적으로 인지하게 합니다.
+### 1. iOS 17/18 스타일 (Native Look & Feel)
+- **Squircle Corners**: 부드러운 곡률의 모서리 적용.
+- **System Colors**: iOS 표준 블루, 핑크, 그린, 오렌지 컬러 시스템 사용.
+- **SF Symbols Style**: 정갈하고 일관된 두께의 아이콘 시스템.
 
-### 2. 제스처 기반 전환
-- 하단 탭 바 외에도 화면 좌우 스와이프를 통해 아기 간 화면 전환을 즉시 수행합니다.
-
-### 3. 프리미엄 디자인
-- **Glassmorphism**: 카드 UI에 투명도와 블러 효과를 주어 세련된 느낌 전달.
-- **Micro-animations**: 기록 완료 시 부드러운 체크 애니메이션이나 아기 캐릭터의 반응 등을 추가.
-
----
-
-## Phase 4: 데이터베이스 구조 설계 (초안)
-
-### 1. `babies` (아기 정보)
-- `id` (UUID, PK)
-- `family_id` (UUID, FK)
-- `name` (Text)
-- `birth_date` (Timestamp)
-- `gender` (Enum)
-- `color_theme` (Text) - 'mint' | 'coral'
-- `profile_image_url` (Text)
-
-### 2. `records` (상세 기록)
-- `id` (UUID, PK)
-- `baby_id` (UUID, FK)
-- `user_id` (UUID, FK)
-- `category` (Enum: `feeding`, `sleep`, `diaper`, `activity`, `health`, `custom`)
-- `sub_category` (Text: `formula`, `breast`, `solid`, `nap`, `night_sleep`, `bath`, `medicine`, 등)
-- `value` (Float) - 양, 온도 등 수치 데이터
-- `start_time` (Timestamp)
-- `end_time` (Timestamp)
-- `note` (Text)
-- `metadata` (JSONB) - 커스텀 기록이나 추가 정보(예: 이유식 재료, 약 종류) 저장용
-- `created_at` (Timestamp)
-
-### 3. `user_settings` (사용자/아기별 설정)
-- `baby_id` (UUID, FK)
-- `feeding_interval` (Integer) - 수유 주기(분 단위)
-- `mute_during_night` (Boolean) - 밤잠 중 알림 끄기 여부
-- `custom_categories` (JSONB) - 사용자가 추가한 커스텀 기록 항목 정의
-
-### 3. `families` (가족 그룹)
-- `id` (UUID, PK)
-- `name` (Text)
-
-### 4. `family_members` (가족 멤버)
-- `family_id` (UUID, FK)
-- `user_id` (UUID, FK)
-- `role` (Enum: `owner`, `member`)
+### 2. Bright Liquid Glass
+- **Frosted Glass**: 화이트 반투명 배경과 고해상도 블러 효과.
+- **Pastel Liquid Background**: 배경에서 유영하는 화사한 파스텔톤 광원 효과.
+- **Vibrancy**: 높은 채도와 대비를 통한 프리미엄 시각 경험.
 
 ---
 
 ## 현재 진행 상황 (Progress) - 2026.04
 
 ### ✅ 완료된 작업 (Completed)
-- **프로젝트 초기 설정**: Vite, React, TypeScript 기반 FSD 아키텍처 구축.
-- **UI/UX 시스템**: Tailwind CSS v4 + MUI 조합으로 다크 모드 및 Glassmorphism 기반 UI 뼈대 완성.
-- **상태 관리**: Zustand를 이용한 글로벌 상태 관리 및 Supabase 연동.
-- **기록 기능 (`AddRecordForm`)**: 동적 아기 목록 기반 '원클릭 듀얼 기록' 구현.
-- **대시보드 (`Dashboard`)**: DB 연동 동적 아기 카드 렌더링 및 온보딩 UI 구현.
-- **타임라인 (`RecordTimeline`)**: A, B 아기별 필터링이 가능한 히스토리 뷰.
-- **통계 및 성장 시각화 (`StatsPage`, `GrowthChart`)**: Recharts 연동 완료.
-- **스마트 배고픔 알림 (`useFeedingStatus`)**: 수유 주기 기반 알림 로직 구현.
-- **Supabase 백엔드 연동**: Auth(Magic Link) 인증, Family 자동 생성, CRUD 연동 완료.
-- **아기 관리**: 설정 페이지 내 아기 추가/수정 기능 구현.
+- **MUI 의존성 100% 제거**: 프로젝트 내 모든 MUI 컴포넌트를 Tailwind/HTML로 교체하여 경량화 성공.
+- **Bright Liquid Glass 디자인 구현**: 화사하고 깨끗한 화이트 테마 기반의 액체 유리 UI 완성.
+- **iOS 스타일 UI 시스템**: 세그먼트 컨트롤, 탭 바, 그룹 리스트 등 iOS 순정 UI 패턴 이식 완료.
+- **Supabase 백엔드 고도화**: Auth, Family 자동 생성, 실시간 CRUD 연동 완료.
+- **빌드 안정성 확보**: 프로덕션 빌드 테스트 통과 및 최종 커밋 완료.
 
 ### 🚧 진행 중 / 대기 중인 작업 (Pending)
-- **UI/UX 업그레이드**: 전면적인 Glassmorphism 및 프리미엄 디자인 고도화.
-- **공동 양육자 초대 기능**: Family ID를 통한 실시간 데이터 공유.
-- **PWA 및 모바일 최적화**: Web App Manifest 및 푸시 알림.
+- **PWA 및 모바일 최적화**: 실제 모바일 기기에서의 터치 제스처 및 홈 화면 추가 최적화.
+- **푸시 알림**: Service Worker를 활용한 실시간 알람 기능.
+- **공동 양육자 초대**: Family ID 공유를 통한 실시간 초대 로직.
 
 ---
 
 ## 향후 로드맵 (Refined)
 
-1.  **Phase 5: 데이터 동기화 고도화 (진행중)**
-    - [x] Supabase 프로젝트 연동 및 CRUD 구현.
-    - [ ] 공동 양육자 초대 및 Realtime 기반 실시간 싱크 강화.
-2.  **Phase 6: Glassmorphism UI/UX 업그레이드 (Next Step!)**
-    - [ ] 유리 투명도 및 블러 효과 극대화 (CSS 최적화).
-    - [ ] 비비드한 그라데이션 및 네온 컬러 시스템 도입.
-    - [ ] Framer Motion 기반 마이크로 애니메이션 강화.
-3.  **Phase 7: PWA 및 실제 알림 (Push Notifications)**
-    - [ ] PWA Manifest 및 Service Worker 설정.
-    - [ ] 백그라운드 푸시 알림 발송 로직 구축.
-4.  **Phase 8: 베타 테스트 및 폴리싱**
-    - [ ] 모바일 환경 최적화 및 제스처 고도화.
+1.  **Phase 6: UI/UX 고도화 (완료 단계)**
+    - [x] MUI 제거 및 순수 Tailwind 전환.
+    - [x] iOS 스타일 라이트 모드 (Bright Liquid Glass) 적용.
+    - [ ] Framer Motion을 이용한 유기적 전환 애니메이션 추가.
+2.  **Phase 7: PWA 및 모바일 최적화 (Next Step!)**
+    - [ ] PWA Manifest 고도화 및 아이콘 설정.
+    - [ ] Service Worker 푸시 알림 연동.
+3.  **Phase 8: 베타 테스트 및 폴리싱**
+    - [ ] 모바일 브라우저(Safari, Chrome) 제스처 최적화.
+    - [ ] 통계 그래프 인터랙션 강화.

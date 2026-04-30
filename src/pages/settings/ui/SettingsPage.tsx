@@ -6,6 +6,7 @@ import {
   ChevronRight,
   LogOut,
   Plus,
+  Minus,
   X
 } from 'lucide-react';
 import { useState } from 'react';
@@ -13,6 +14,8 @@ import { useUserSettingsStore } from '@entities/user-settings';
 import { useSessionStore } from '@entities/session';
 import { useBabyStore } from '@entities/baby';
 import { babyService } from '@entities/baby/api/babyService';
+import { supabase } from '@shared/api/supabase';
+import { Edit2 } from 'lucide-react';
 
 export const SettingsPage = () => {
   const { babies, initializeBabies } = useBabyStore();
@@ -24,8 +27,8 @@ export const SettingsPage = () => {
     customCategories,
     setFeedingInterval, 
     setMuteDuringNight,
-    addCustomCategory,
-    removeCustomCategory
+    addCustomType,
+    removeCustomType
   } = useUserSettingsStore();
 
   const { user, signOut } = useSessionStore();
@@ -39,9 +42,14 @@ export const SettingsPage = () => {
     colorTheme: 'mint'
   });
 
-  const handleAddCategory = () => {
-    if (newCategory.trim() && !customCategories.includes(newCategory.trim())) {
-      addCustomCategory(newCategory.trim(), firstBabyId);
+  const [isEditNameOpen, setIsEditNameOpen] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || '양육자');
+
+  const [activeCategory, setActiveCategory] = useState('SOLID');
+
+  const handleAddType = () => {
+    if (newCategory.trim()) {
+      addCustomType(activeCategory, newCategory.trim(), firstBabyId);
       setNewCategory('');
     }
   };
@@ -68,18 +76,41 @@ export const SettingsPage = () => {
     }
   };
 
+  const handleUpdateName = async () => {
+    if (!displayName.trim()) return;
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { display_name: displayName.trim() }
+      });
+      if (error) throw error;
+      setIsEditNameOpen(false);
+    } catch (err) {
+      console.error('이름 수정 실패:', err);
+    }
+  };
+
   return (
     <div className="animate-ios-in space-y-8 pb-10">
       <h2 className="text-3xl font-black tracking-tight text-[#1C1C1E]">설정</h2>
 
       {/* Profile Section */}
-      <div className="ios-glass p-5 flex items-center space-x-4 border border-white">
-        <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
-          <User size={32} />
+      <div 
+        onClick={() => setIsEditNameOpen(true)}
+        className="ios-glass p-5 flex items-center justify-between border border-white active:scale-[0.98] transition-transform cursor-pointer"
+      >
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
+            <User size={32} />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold tracking-tight text-[#1C1C1E]">
+              {user?.user_metadata?.display_name || '양육자'}님
+            </h3>
+            <p className="text-xs font-medium text-gray-400">{user?.email}</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-bold tracking-tight text-[#1C1C1E]">양육자님</h3>
-          <p className="text-sm font-medium text-gray-400">{user?.email}</p>
+        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-300">
+          <Edit2 size={14} />
         </div>
       </div>
 
@@ -184,35 +215,54 @@ export const SettingsPage = () => {
           </div>
 
           <div>
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 block px-1">기록 카테고리</span>
-            <div className="ios-glass p-6 space-y-4 border border-white">
-              <div className="flex flex-wrap gap-2">
-                {customCategories.map((category) => (
-                  <div 
-                    key={category} 
-                    className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100"
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 block px-1">기록 항목 설정</span>
+            <div className="ios-glass p-6 space-y-6 border border-white">
+              {/* Category Selector for Settings */}
+              <div className="bg-gray-50 p-1 rounded-xl flex space-x-1 mb-4">
+                {['SOLID', 'SNACK', 'ACTIVITY', 'CUSTOM'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`flex-1 py-1.5 text-[10px] font-black rounded-lg transition-all ${
+                      activeCategory === cat ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-400'
+                    }`}
                   >
-                    <span className="text-xs font-bold text-[#1C1C1E]">{category}</span>
+                    {cat === 'SOLID' ? '이유식' : cat === 'SNACK' ? '간식' : cat === 'ACTIVITY' ? '활동' : '기타'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2 min-h-[40px]">
+                {(customCategories[activeCategory] || []).map((type) => (
+                  <div 
+                    key={type} 
+                    className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 animate-ios-in"
+                  >
+                    <span className="text-xs font-bold text-blue-700">{type}</span>
                     <button 
-                      onClick={() => removeCustomCategory(category, firstBabyId)}
-                      className="text-gray-300 hover:text-red-500"
+                      onClick={() => removeCustomType(activeCategory, type, firstBabyId)}
+                      className="text-blue-300 hover:text-red-500"
                     >
                       <X size={14} />
                     </button>
                   </div>
                 ))}
+                {(customCategories[activeCategory] || []).length === 0 && (
+                  <p className="text-xs text-gray-300 py-2">추가된 항목이 없습니다.</p>
+                )}
               </div>
+
               <div className="flex space-x-2">
                 <input 
                   type="text" 
-                  placeholder="새 카테고리 추가" 
+                  placeholder={`${activeCategory === 'SOLID' ? '이유식' : activeCategory === 'SNACK' ? '간식' : activeCategory === 'ACTIVITY' ? '활동' : '기타'} 종류 추가`} 
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddType()}
                   className="flex-1 bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-100 text-[#1C1C1E]"
                 />
                 <button 
-                  onClick={handleAddCategory}
+                  onClick={handleAddType}
                   className="bg-blue-600 text-white p-2 rounded-xl shadow-lg shadow-blue-500/20"
                 >
                   <Plus size={20} />
@@ -304,6 +354,39 @@ export const SettingsPage = () => {
                   onClick={handleAddBaby}
                   className="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20"
                 >등록하기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Name Modal */}
+      {isEditNameOpen && (
+        <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setIsEditNameOpen(false)} />
+          <div className="w-full max-w-md p-6 relative animate-ios-in rounded-t-[32px] sm:rounded-[32px] bg-white shadow-2xl">
+            <h3 className="text-xl font-black mb-6 text-[#1C1C1E]">이름 변경</h3>
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <label className="text-[11px] font-black text-gray-400 uppercase ml-1">새 이름</label>
+                <input 
+                  type="text" 
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="사용하실 이름을 입력하세요"
+                  className="w-full bg-gray-50 rounded-2xl p-4 text-[#1C1C1E] outline-none border border-gray-100"
+                  autoFocus
+                />
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <button 
+                  onClick={() => setIsEditNameOpen(false)}
+                  className="flex-1 py-4 font-bold text-gray-400"
+                >취소</button>
+                <button 
+                  onClick={handleUpdateName}
+                  className="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20"
+                >저장하기</button>
               </div>
             </div>
           </div>

@@ -20,6 +20,9 @@ export const GrowthChart = ({ gender, babyData, babyName }: GrowthChartProps) =>
   const standards = (growthData as any)[gender].weight;
   const isMale = gender === 'male';
   const themeColor = isMale ? '#007AFF' : '#FF375F';
+  
+  // Safe ID for SVG gradients (avoiding special characters/Korean)
+  const gradientId = `colorBaby-${gender}-${isMale ? 'boy' : 'girl'}`;
 
   // Combine standards and baby data for the chart
   const data = standards.map((s: any) => {
@@ -31,7 +34,7 @@ export const GrowthChart = ({ gender, babyData, babyName }: GrowthChartProps) =>
   });
 
   return (
-    <div className="ios-glass p-6 h-[420px] w-full">
+    <div className="ios-glass p-6 h-[420px] w-full border border-white">
       <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">
         {babyName} 성장 곡선 (체중)
       </h3>
@@ -39,9 +42,9 @@ export const GrowthChart = ({ gender, babyData, babyName }: GrowthChartProps) =>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id={`colorBaby-${babyName}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={themeColor} stopOpacity={0.2}/>
-                <stop offset="95%" stopColor={themeColor} stopOpacity={0}/>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={themeColor} stopOpacity={0.3}/>
+                <stop offset="95%" stopColor={themeColor} stopOpacity={0.01}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.03)" vertical={false} />
@@ -51,32 +54,55 @@ export const GrowthChart = ({ gender, babyData, babyName }: GrowthChartProps) =>
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              tick={{ fontWeight: 600 }}
+              tick={{ fontWeight: 600, fill: '#636366' }}
+              label={{ value: '개월', position: 'insideBottomRight', offset: -5, fontSize: 10, fill: '#636366' }}
             />
             <YAxis 
               stroke="rgba(0,0,0,0.2)"
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              tick={{ fontWeight: 600 }}
+              tick={{ fontWeight: 600, fill: '#636366' }}
+              label={{ value: 'kg', position: 'insideTopLeft', offset: 0, fontSize: 10, fill: '#636366' }}
             />
             <Tooltip 
               contentStyle={{ 
                 backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                border: '0.5px solid rgba(0,0,0,0.05)', 
-                borderRadius: '16px',
-                backdropFilter: 'blur(10px)',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
+                border: 'none',
+                borderRadius: '20px',
+                backdropFilter: 'blur(20px)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
+                padding: '12px'
               }}
-              itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+              itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#1C1C1E' }}
+              labelStyle={{ color: '#636366', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
             />
             
-            {/* Normal Range Area (p5 to p95) */}
+            {/* Standard Range Area (p3 to p97) */}
             <Area 
               type="monotone" 
-              dataKey="p95" 
+              dataKey="p97" 
               stroke="none" 
-              fill="rgba(0,0,0,0.02)" 
+              fill="rgba(142, 142, 147, 0.05)" 
+              connectNulls
+            />
+            <Area 
+              type="monotone" 
+              dataKey="p3" 
+              stroke="none" 
+              fill="#FFFFFF" 
+              connectNulls
+            />
+            
+            {/* Median Line (p50) */}
+            <Area
+              type="monotone"
+              dataKey="p50"
+              stroke="rgba(142, 142, 147, 0.2)"
+              strokeDasharray="4 4"
+              fill="none"
+              name="표준(50%)"
+              connectNulls
             />
             
             {/* Baby's Actual Data Area */}
@@ -86,25 +112,22 @@ export const GrowthChart = ({ gender, babyData, babyName }: GrowthChartProps) =>
               stroke={themeColor} 
               strokeWidth={4}
               fillOpacity={1}
-              fill={`url(#colorBaby-${babyName})`}
+              fill={`url(#${gradientId})`}
               name={babyName}
-            />
-
-            {/* Median Line */}
-            <Line 
-              type="monotone" 
-              dataKey="p50" 
-              stroke="rgba(0,0,0,0.1)" 
-              strokeDasharray="5 5" 
-              dot={false}
-              name="평균"
+              connectNulls
+              activeDot={{ r: 6, strokeWidth: 0, fill: themeColor }}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
-      <p className="text-[10px] font-bold text-gray-300 mt-6 leading-relaxed">
-        * 회색 영역은 하위 5% ~ 상위 5% 정상 범위를 나타냅니다. 점선은 평균값(50%)입니다.
-      </p>
+      <div className="mt-8 space-y-1">
+        <p className="text-[10px] font-bold text-gray-400 leading-relaxed">
+          * 회색 영역은 하위 3% ~ 상위 3% 표준 범위를 나타냅니다.
+        </p>
+        <p className="text-[10px] font-bold text-gray-400 leading-relaxed">
+          * 점선은 WHO 표준 성장 곡선의 중위값(50%)입니다.
+        </p>
+      </div>
     </div>
   );
 };

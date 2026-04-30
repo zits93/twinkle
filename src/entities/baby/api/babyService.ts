@@ -19,13 +19,20 @@ export const babyService = {
     if (!user) throw new Error('인증이 필요합니다.');
 
     // 1. 이미 소속된 가족이 있는지 확인
-    const { data: member } = await supabase
+    // maybeSingle()은 여러 줄이 반환되면 에러를 발생시키므로, limit(1)을 사용하여 안전하게 가져옵니다.
+    const { data: members, error: mCheckError } = await supabase
       .from('family_members')
       .select('family_id')
       .eq('user_id', user.id)
-      .maybeSingle();
+      .limit(1);
 
-    if (member) return member.family_id;
+    if (mCheckError) {
+      console.error('가족 멤버 확인 중 오류:', mCheckError);
+    }
+
+    if (members && members.length > 0) {
+      return members[0].family_id;
+    }
 
     // 2. 소속된 가족이 없다면 새로 생성
     const { data: family, error: fError } = await supabase
@@ -34,14 +41,20 @@ export const babyService = {
       .select()
       .single();
 
-    if (fError) throw fError;
+    if (fError) {
+      console.error('가족 생성 중 오류:', fError);
+      throw fError;
+    }
 
     // 3. 생성된 가족에 자신을 멤버(owner)로 추가
     const { error: mError } = await supabase
       .from('family_members')
       .insert([{ family_id: family.id, user_id: user.id, role: 'owner' }]);
 
-    if (mError) throw mError;
+    if (mError) {
+      console.error('가족 멤버 추가 중 오류:', mError);
+      throw mError;
+    }
 
     return family.id;
   },

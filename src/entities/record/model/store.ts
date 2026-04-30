@@ -76,9 +76,15 @@ export const useRecordStore = create<RecordState>((set, get) => ({
   },
 
   updateRecord: async (id, updates) => {
-    set((state) => ({
-      records: state.records.map((r) => r.id === id ? { ...r, ...updates } : r)
-    }));
-    // TODO: Implement update in recordService
+    try {
+      // Optimistic UI update
+      set((state) => ({
+        records: state.records.map((r) => r.id === id ? { ...r, ...updates } : r)
+      }));
+      await recordService.updateRecord(id, updates);
+    } catch (error) {
+      console.error('Failed to update record:', error);
+      // Optional: Revert changes on error
+    }
   },
 }));

@@ -2,6 +2,10 @@ export type BabyId = string;
 
 export type RecordCategory = 
   | 'FEEDING' 
+  | 'SOLID'
+  | 'SNACK'
+  | 'WATER'
+  | 'MILK'
   | 'SLEEP' 
   | 'DIAPER' 
   | 'ACTIVITY' 
@@ -58,5 +62,5 @@ export interface UserSettings {
   nightSleepStart: string; // "20:00"
   nightSleepEnd: string; // "07:00"
   muteNightNotif: boolean;
-  customCategories: string[];
+  customCategories: Record<string, string[]>;
 }
