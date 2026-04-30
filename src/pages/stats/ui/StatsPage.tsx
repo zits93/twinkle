@@ -8,7 +8,6 @@ import {
   Bar,
   Legend
 } from 'recharts';
-import { Box, Typography, Stack, Grid, Paper } from '@mui/material';
 import { GrowthChart } from '@features/view-growth-chart/ui/GrowthChart';
 
 export const StatsPage = () => {
@@ -39,64 +38,77 @@ export const StatsPage = () => {
   ];
 
   return (
-    <Box sx={{ animate: 'fadeIn 0.5s', pb: 4 }}>
-      <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
-        성장 통계
-      </Typography>
+    <div className="animate-ios-in space-y-8 pb-10">
+      <h2 className="text-3xl font-black tracking-tight text-[#1C1C1E]">성장 통계</h2>
 
-      <Stack spacing={4}>
+      <div className="space-y-8">
         {/* Daily Feeding Chart */}
-        <Paper className="glass" sx={{ p: 3, height: 350 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-            일간 총 수유량 추이
-          </Typography>
-          <ResponsiveContainer width="100%" height="80%">
-            <BarChart data={feedingData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-              <XAxis dataKey="day" stroke="rgba(255,255,255,0.5)" />
-              <YAxis stroke="rgba(255,255,255,0.5)" />
-              <Tooltip 
-                contentStyle={{ backgroundColor: '#333', border: 'none', borderRadius: 8 }}
-              />
-              <Legend />
-              <Bar dataKey="babyA" name="아기 A" fill="#70D6BC" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="babyB" name="아기 B" fill="#FF7E67" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Paper>
+        <div className="ios-glass p-6 h-[400px]">
+          <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">일간 총 수유량 추이</h3>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={feedingData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
+                <XAxis 
+                  dataKey="day" 
+                  stroke="rgba(0,0,0,0.3)" 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis 
+                  stroke="rgba(0,0,0,0.3)" 
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                    border: '0.5px solid rgba(0,0,0,0.05)', 
+                    borderRadius: '16px',
+                    backdropFilter: 'blur(10px)',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
+                  }}
+                  itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                <Bar dataKey="babyA" name="아기 A" fill="#30D158" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="babyB" name="아기 B" fill="#FF375F" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-        <GrowthChart 
-          gender="male" 
-          babyName="아기 A" 
-          babyData={babyAData} 
-        />
+        <div className="space-y-6">
+          <GrowthChart 
+            gender="male" 
+            babyName="아기 A" 
+            babyData={babyAData} 
+          />
 
-        <GrowthChart 
-          gender="female" 
-          babyName="아기 B" 
-          babyData={babyBData} 
-        />
+          <GrowthChart 
+            gender="female" 
+            babyName="아기 B" 
+            babyData={babyBData} 
+          />
+        </div>
         
-        <Paper className="glass" sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-            패턴 요약
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid size={6}>
-              <Box sx={{ p: 2, bgcolor: 'rgba(112, 214, 188, 0.1)', borderRadius: 2 }}>
-                <Typography variant="caption" color="primary">평균 수유량 (A)</Typography>
-                <Typography variant="h5">160ml</Typography>
-              </Box>
-            </Grid>
-            <Grid size={6}>
-              <Box sx={{ p: 2, bgcolor: 'rgba(255, 126, 103, 0.1)', borderRadius: 2 }}>
-                <Typography variant="caption" color="secondary">평균 수유량 (B)</Typography>
-                <Typography variant="h5">140ml</Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Stack>
-    </Box>
+        <div className="ios-glass p-8">
+          <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">패턴 요약</h3>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="p-5 bg-green-50 rounded-2xl border border-green-100 shadow-sm">
+              <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">평균 수유량 (A)</span>
+              <p className="text-3xl font-black mt-2 text-[#1C1C1E]">160<span className="text-sm ml-1 text-gray-400">ml</span></p>
+            </div>
+            <div className="p-5 bg-pink-50 rounded-2xl border border-pink-100 shadow-sm">
+              <span className="text-[10px] font-black text-pink-500 uppercase tracking-widest">평균 수유량 (B)</span>
+              <p className="text-3xl font-black mt-2 text-[#1C1C1E]">140<span className="text-sm ml-1 text-gray-400">ml</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

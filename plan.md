@@ -1,6 +1,8 @@
-# Twinkle: Twin Parenting Record App Development Plan
-
 Twinkle is a specialized parenting record application designed specifically for parents of twins. It focuses on reducing the cognitive load and repetitive tasks associated with tracking two babies simultaneously.
+
+## 💡 개발 가이드라인 (Dev Guidelines)
+- **커밋 전 빌드 확인**: 코드 수정(단위 변경 등) 완료 후 커밋하기 전에 반드시 `npm run build`를 실행하여 빌드 오류가 없는지 확인합니다.
+- **FSD 아키텍처 준수**: 모든 컴포넌트와 로직은 Feature-Sliced Design 구조에 맞게 배치합니다.
 
 ## Phase 1: 핵심 기능 정의 (쌍둥이 특화 포인트)
 
@@ -108,37 +110,35 @@ Twinkle is a specialized parenting record application designed specifically for 
 ## 현재 진행 상황 (Progress) - 2026.04
 
 ### ✅ 완료된 작업 (Completed)
-- **프로젝트 초기 설정**: Vite, React, TypeScript 기반 FSD(Feature-Sliced Design) 아키텍처 구축.
-- **UI/UX 시스템**: Tailwind CSS v4 + MUI 조합으로 다크 모드 및 Glassmorphism 기반 프리미엄 UI 뼈대 완성.
-- **상태 관리**: Zustand를 이용한 로컬 상태(메모리 기반) 관리 로직 및 아기 프로필 스토어 구현.
-- **기록 기능 (`AddRecordForm`)**: '원클릭 듀얼 기록' 지원, 수유(분유/모유/유축 등), 수면, 기저귀, 활동(목욕/터미타임), 건강(체온/약), 커스텀 카테고리 지원.
-- **자동 수면 인식**: 밤 8시 ~ 아침 6시 기록 시 자동으로 '밤잠' 분류.
-- **대시보드 (`Dashboard`)**: 아기별 요약 상태(마지막 수유/수면/기저귀), 쌍둥이 싱크 상태 시각화.
+- **프로젝트 초기 설정**: Vite, React, TypeScript 기반 FSD 아키텍처 구축.
+- **UI/UX 시스템**: Tailwind CSS v4 + MUI 조합으로 다크 모드 및 Glassmorphism 기반 UI 뼈대 완성.
+- **상태 관리**: Zustand를 이용한 글로벌 상태 관리 및 Supabase 연동.
+- **기록 기능 (`AddRecordForm`)**: 동적 아기 목록 기반 '원클릭 듀얼 기록' 구현.
+- **대시보드 (`Dashboard`)**: DB 연동 동적 아기 카드 렌더링 및 온보딩 UI 구현.
 - **타임라인 (`RecordTimeline`)**: A, B 아기별 필터링이 가능한 히스토리 뷰.
-- **통계 및 성장 시각화 (`StatsPage`, `GrowthChart`)**: Recharts를 이용한 일간 수유량 바 차트 및 WHO/KCDC 기준 백분위수 체중 성장 곡선 차트 구현.
-- **스마트 배고픔 알림 (`useFeedingStatus`)**: 마지막 수유 시간 기준 주기 경과 여부 UI 표시 (밤잠 중 무음 처리 로직 포함).
-- **프로젝트 인프라**: GitHub Actions 기반 CI (Lint & Build) 및 GitHub Pages 자동 배포 파이프라인 구축. Issue/PR 템플릿 적용 완료.
+- **통계 및 성장 시각화 (`StatsPage`, `GrowthChart`)**: Recharts 연동 완료.
+- **스마트 배고픔 알림 (`useFeedingStatus`)**: 수유 주기 기반 알림 로직 구현.
+- **Supabase 백엔드 연동**: Auth(Magic Link) 인증, Family 자동 생성, CRUD 연동 완료.
+- **아기 관리**: 설정 페이지 내 아기 추가/수정 기능 구현.
 
 ### 🚧 진행 중 / 대기 중인 작업 (Pending)
-- **Supabase 백엔드 연동**: 실제 DB 생성 및 Zustand 로컬 상태를 Supabase Realtime으로 교체.
-- **사용자 설정 페이지**: 수유 간격(예: 3시간, 4시간) 및 커스텀 카테고리 직접 추가/수정 기능.
-- **PWA 및 모바일 최적화**: Web App Manifest 설정 및 Service Worker를 통한 백그라운드 푸시 알림 (실제 앱처럼 동작하도록).
-- **UI 폴리싱**: 스와이프 제스처를 이용한 탭 전환, 각 동작에 따른 마이크로 애니메이션 강화.
+- **UI/UX 업그레이드**: 전면적인 Glassmorphism 및 프리미엄 디자인 고도화.
+- **공동 양육자 초대 기능**: Family ID를 통한 실시간 데이터 공유.
+- **PWA 및 모바일 최적화**: Web App Manifest 및 푸시 알림.
 
 ---
 
 ## 향후 로드맵 (Refined)
 
-1.  **Phase 5: 데이터 영속성 및 동기화 (Supabase 연동)**
-    - Supabase 프로젝트 생성 및 SQL 스키마 적용 (Auth, Database).
-    - Zustand 스토어를 Supabase 클라이언트와 연동하여 읽기/쓰기 구현.
-    - 공동 양육자 초대(Family ID 공유) 및 Realtime 기반 대시보드 자동 갱신.
-2.  **Phase 6: 맞춤 설정 고도화 (Settings)**
-    - 환경 설정 탭 구현: 밤잠 기준 시간 설정, 수유 간격 주기 변경.
-    - 테마 색상(A아기, B아기) 커스터마이징 기능.
+1.  **Phase 5: 데이터 동기화 고도화 (진행중)**
+    - [x] Supabase 프로젝트 연동 및 CRUD 구현.
+    - [ ] 공동 양육자 초대 및 Realtime 기반 실시간 싱크 강화.
+2.  **Phase 6: Glassmorphism UI/UX 업그레이드 (Next Step!)**
+    - [ ] 유리 투명도 및 블러 효과 극대화 (CSS 최적화).
+    - [ ] 비비드한 그라데이션 및 네온 컬러 시스템 도입.
+    - [ ] Framer Motion 기반 마이크로 애니메이션 강화.
 3.  **Phase 7: PWA 및 실제 알림 (Push Notifications)**
-    - PWA Manifest 작성 (모바일 홈 화면 추가 최적화).
-    - Service Worker를 활용하여 웹 브라우저가 닫혀 있어도 주기가 지나면 푸시 알림 발송.
+    - [ ] PWA Manifest 및 Service Worker 설정.
+    - [ ] 백그라운드 푸시 알림 발송 로직 구축.
 4.  **Phase 8: 베타 테스트 및 폴리싱**
-    - 모바일 환경(iOS Safari, Android Chrome)에서의 터치 및 스크롤 최적화.
-    - App Store / Play Store 등록을 위한 TWA(Trusted Web Activity) 패키징 고려.
+    - [ ] 모바일 환경 최적화 및 제스처 고도화.

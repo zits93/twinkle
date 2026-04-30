@@ -1,45 +1,34 @@
-import { useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  ToggleButton, 
-  ToggleButtonGroup, 
-  TextField, 
-  Typography, 
-  Stack, 
-  Grid,
-  Paper,
-  InputAdornment,
-  Chip
-} from '@mui/material';
+import { useState, useEffect } from 'react';
 import { 
   Milk, 
   Moon, 
   Droplets, 
-  Baby, 
-  Plus,
   Gamepad2,
   Stethoscope,
   Star
 } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
+import { useBabyStore } from '@entities/baby';
+import { useSessionStore } from '@entities/session';
+import { useUserSettingsStore } from '@entities/user-settings';
 import type { BabyId, RecordCategory } from '@shared/types/record';
 
 const CATEGORIES = [
-  { id: 'FEEDING', label: '수유/식사', icon: <Milk size={20} />, color: '#70D6BC' },
-  { id: 'SLEEP', label: '수면', icon: <Moon size={20} />, color: '#9FA8DA' },
-  { id: 'DIAPER', label: '기저귀', icon: <Droplets size={20} />, color: '#FFAB91' },
-  { id: 'ACTIVITY', label: '활동/놀이', icon: <Gamepad2 size={20} />, color: '#FFF176' },
-  { id: 'HEALTH', label: '건강/병원', icon: <Stethoscope size={20} />, color: '#81C784' },
-  { id: 'CUSTOM', label: '커스텀', icon: <Star size={20} />, color: '#BA68C8' },
+  { id: 'FEEDING', label: '수유', icon: <Milk size={20} />, color: '#007AFF' },
+  { id: 'SLEEP', label: '수면', icon: <Moon size={20} />, color: '#5856D6' },
+  { id: 'DIAPER', label: '기저귀', icon: <Droplets size={20} />, color: '#FF9500' },
+  { id: 'ACTIVITY', label: '활동', icon: <Gamepad2 size={20} />, color: '#30D158' },
+  { id: 'HEALTH', label: '건강', icon: <Stethoscope size={20} />, color: '#FF3B30' },
+  { id: 'CUSTOM', label: '기타', icon: <Star size={20} />, color: '#AF52DE' },
 ];
 
-const FEEDING_TYPES = ['분유', '모유', '유축', '유축수유', '이유식', '간식', '우유', '물'];
+const FEEDING_TYPES = ['분유', '모유', '유축', '이유식', '간식', '물'];
 const ACTIVITY_TYPES = ['목욕', '터미타임', '놀이', '산책'];
 const HEALTH_TYPES = ['병원', '체온', '약', '접종'];
 
 export const AddRecordForm = () => {
-  const [targetBaby, setTargetBaby] = useState<BabyId | 'BOTH'>('baby-a');
+  const { babies } = useBabyStore();
+  const [targetBaby, setTargetBaby] = useState<BabyId | 'BOTH'>('');
   const [category, setCategory] = useState<RecordCategory>('FEEDING');
   const [subCategory, setSubCategory] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
@@ -47,176 +36,167 @@ export const AddRecordForm = () => {
   
   const addRecord = useRecordStore((state) => state.addRecord);
   const addDualRecord = useRecordStore((state) => state.addDualRecord);
+  const user = useSessionStore((state) => state.user);
+  const { customCategories } = useUserSettingsStore();
 
-  const handleBabyChange = (_: any, newBaby: BabyId | 'BOTH') => {
-    if (newBaby) setTargetBaby(newBaby);
-  };
+  useEffect(() => {
+    if (babies.length > 0 && !targetBaby) {
+      setTargetBaby(babies[0].id);
+    }
+  }, [babies, targetBaby]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user || !targetBaby) return;
     
     const now = new Date();
-    const hour = now.getHours();
-    const isNightTime = hour >= 20 || hour < 6;
-
     const baseRecord = {
-      userId: 'user-1', // Mock user
+      userId: user.id,
       category,
-      subCategory: subCategory || (category === 'SLEEP' ? (isNightTime ? 'NIGHT' : 'NAP') : '기본'),
+      subCategory: subCategory || '기본',
       value: amount ? parseFloat(amount) : undefined,
       startTime: now.toISOString(),
       note,
       createdAt: now.toISOString(),
     };
 
-    if (targetBaby === 'BOTH') {
-      const recordA = { ...baseRecord, id: crypto.randomUUID(), babyId: 'baby-a' as BabyId, isDual: true, syncGroupId: crypto.randomUUID() };
-      const recordB = { ...baseRecord, id: crypto.randomUUID(), babyId: 'baby-b' as BabyId, isDual: true, syncGroupId: recordA.syncGroupId };
-      addDualRecord(recordA, recordB);
-    } else {
-      addRecord({ ...baseRecord, id: crypto.randomUUID(), babyId: targetBaby });
-    }
+    try {
+      if (targetBaby === 'BOTH' && babies.length >= 2) {
+        const recordA = { ...baseRecord, id: crypto.randomUUID(), babyId: babies[0].id, isDual: true, syncGroupId: crypto.randomUUID() };
+        const recordB = { ...baseRecord, id: crypto.randomUUID(), babyId: babies[1].id, isDual: true, syncGroupId: recordA.syncGroupId };
+        await addDualRecord(recordA, recordB);
+      } else {
+        await addRecord({ ...baseRecord, id: crypto.randomUUID(), babyId: targetBaby as BabyId });
+      }
 
-    // Reset form
-    setAmount('');
-    setNote('');
-    alert('기록되었습니다!');
+      setAmount('');
+      setNote('');
+    } catch (err) {
+      console.error('저장 실패:', err);
+    }
   };
 
+  if (babies.length === 0) return null;
+
   return (
-    <Paper className="glass" sx={{ p: 3, maxWidth: 500, mx: 'auto' }}>
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
-        새 활동 기록하기
-      </Typography>
+    <div className="mb-10 animate-ios-in">
+      <h2 className="text-3xl font-black tracking-tight mb-6 text-[#1C1C1E]">기록</h2>
 
-      <Box component="form" onSubmit={handleSubmit}>
-        <Stack spacing={3}>
-          {/* Baby Selection */}
-          <Box>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              기록할 아이 선택
-            </Typography>
-            <ToggleButtonGroup
-              value={targetBaby}
-              exclusive
-              onChange={handleBabyChange}
-              fullWidth
-              size="small"
-              color="primary"
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* iOS Segmented Control - Light */}
+        <div className="bg-black/5 p-1 rounded-2xl flex space-x-0.5 backdrop-blur-md">
+          {babies.map((baby) => (
+            <button
+              key={baby.id}
+              type="button"
+              onClick={() => setTargetBaby(baby.id)}
+              className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all duration-200 ${
+                targetBaby === baby.id ? 'bg-white text-black shadow-sm' : 'text-gray-400'
+              }`}
             >
-              <ToggleButton value="baby-a" sx={{ py: 1.5 }}>
-                <Baby size={16} style={{ marginRight: 8 }} /> 아기 A
-              </ToggleButton>
-              <ToggleButton value="BOTH" sx={{ py: 1.5 }}>둘 다</ToggleButton>
-              <ToggleButton value="baby-b" sx={{ py: 1.5 }} color="secondary">
-                아기 B <Baby size={16} style={{ marginLeft: 8 }} />
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
-
-          {/* Category Selection */}
-          <Grid container spacing={1}>
-            {CATEGORIES.map((item) => (
-              <Grid size={4} key={item.id}>
-                <Button
-                  fullWidth
-                  variant={category === item.id ? 'contained' : 'outlined'}
-                  onClick={() => {
-                    setCategory(item.id as RecordCategory);
-                    setSubCategory('');
-                  }}
-                  sx={{ 
-                    flexDirection: 'column', 
-                    py: 1.5,
-                    minHeight: 64,
-                    borderColor: category === item.id ? 'transparent' : 'rgba(255,255,255,0.1)',
-                    bgcolor: category === item.id ? item.color : 'transparent',
-                    color: category === item.id ? 'black' : 'white',
-                    '&:hover': { bgcolor: category === item.id ? item.color : 'rgba(255,255,255,0.05)' }
-                  }}
-                >
-                  {item.icon}
-                  <Typography variant="caption" sx={{ mt: 0.5, fontWeight: 'bold' }}>{item.label}</Typography>
-                </Button>
-              </Grid>
-            ))}
-          </Grid>
-
-          {/* Sub-Category Selection */}
-          {category !== 'CUSTOM' && (
-            <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                세부 항목
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 1 }}>
-                {(category === 'FEEDING' ? FEEDING_TYPES : 
-                  category === 'ACTIVITY' ? ACTIVITY_TYPES : 
-                  category === 'HEALTH' ? HEALTH_TYPES : ['기본']).map((type) => (
-                  <Chip 
-                    key={type}
-                    label={type} 
-                    onClick={() => setSubCategory(type)}
-                    color={subCategory === type ? 'primary' : 'default'}
-                    variant={subCategory === type ? 'filled' : 'outlined'}
-                  />
-                ))}
-              </Stack>
-            </Box>
+              {baby.name}
+            </button>
+          ))}
+          {babies.length === 2 && (
+            <button
+              type="button"
+              onClick={() => setTargetBaby('BOTH')}
+              className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all duration-200 ${
+                targetBaby === 'BOTH' ? 'bg-white text-black shadow-sm' : 'text-gray-400'
+              }`}
+            >
+              둘 다
+            </button>
           )}
+        </div>
 
-          {category === 'CUSTOM' && (
-            <TextField
-              label="기록 이름"
-              fullWidth
-              value={subCategory}
-              onChange={(e) => setSubCategory(e.target.value)}
-              placeholder="예: 발톱 깎기"
-            />
-          )}
-
-          {/* Input Fields */}
-          {(category === 'FEEDING' || subCategory === '체온') && (
-            <TextField
-              label={subCategory === '체온' ? "온도" : "양"}
-              fullWidth
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              slotProps={{
-                input: {
-                    endAdornment: <InputAdornment position="end">{subCategory === '체온' ? '℃' : 'ml'}</InputAdornment>,
-                }
+        {/* Category Grid - Light */}
+        <div className="ios-glass p-4 grid grid-cols-3 gap-3">
+          {CATEGORIES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                setCategory(item.id as RecordCategory);
+                setSubCategory('');
               }}
-            />
+              className={`flex flex-col items-center p-3 rounded-2xl transition-all duration-200 ${
+                category === item.id ? 'bg-gray-50' : 'active:bg-gray-100'
+              }`}
+            >
+              <div 
+                className={`w-11 h-11 rounded-xl flex items-center justify-center mb-2 shadow-sm transition-transform duration-200 ${
+                  category === item.id ? 'scale-110 shadow-md' : 'opacity-30'
+                }`}
+                style={{ backgroundColor: category === item.id ? item.color : 'transparent' }}
+              >
+                <div style={{ color: category === item.id ? 'white' : item.color }}>
+                  {item.icon}
+                </div>
+              </div>
+              <span className={`text-[11px] font-bold ${
+                category === item.id ? 'text-[#1C1C1E]' : 'text-gray-300'
+              }`}>
+                {item.label}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Sub-Category Chips - Light */}
+        <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+          {(category === 'FEEDING' ? FEEDING_TYPES : 
+            category === 'ACTIVITY' ? ACTIVITY_TYPES : 
+            category === 'HEALTH' ? HEALTH_TYPES : 
+            category === 'CUSTOM' ? customCategories : ['기본']).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setSubCategory(type)}
+              className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors border ${
+                subCategory === type ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-400 border-gray-100'
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
+        {/* Value Inputs - Light */}
+        <div className="ios-glass divide-y divide-gray-50">
+          {(category === 'FEEDING' || subCategory === '체온' || subCategory === '몸무게') && (
+            <div className="p-5 flex items-center justify-between">
+              <span className="text-sm font-bold text-gray-400">{subCategory || '수치'}</span>
+              <div className="flex items-center">
+                <input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0"
+                  className="bg-transparent text-right font-black text-2xl w-24 outline-none text-[#1C1C1E] placeholder-gray-200"
+                />
+                <span className="ml-2 text-sm font-bold text-blue-500">ml</span>
+              </div>
+            </div>
           )}
+          <div className="p-5">
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="메모를 입력하세요"
+              rows={2}
+              className="bg-transparent w-full outline-none text-sm font-medium text-[#1C1C1E] placeholder-gray-300 resize-none"
+            />
+          </div>
+        </div>
 
-          <TextField
-            label="메모"
-            fullWidth
-            multiline
-            rows={2}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="특이사항을 입력하세요"
-          />
-
-          <Button 
-            type="submit" 
-            variant="contained" 
-            fullWidth 
-            size="large"
-            startIcon={<Plus size={20} />}
-            sx={{ 
-              py: 1.5, 
-              fontWeight: 'bold',
-              background: 'linear-gradient(45deg, #70D6BC 30%, #FF7E67 90%)',
-              color: 'white'
-            }}
-          >
-            기록 추가
-          </Button>
-        </Stack>
-      </Box>
-    </Paper>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg active:scale-[0.98] transition-transform shadow-xl shadow-blue-500/20"
+        >
+          기록 완료
+        </button>
+      </form>
+    </div>
   );
 };

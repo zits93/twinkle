@@ -1,4 +1,4 @@
-export type BabyId = 'baby-a' | 'baby-b';
+export type BabyId = string;
 
 export type RecordCategory = 
   | 'FEEDING' 
@@ -49,7 +49,8 @@ export interface BabyProfile {
   birthDate: string;
   gender: 'M' | 'F';
   colorTheme: string; // 'mint' | 'coral'
-  photoUrl?: string;
+  profileImageUrl?: string;
+  photoUrl?: string; // Keep for compatibility if used elsewhere
 }
 
 export interface UserSettings {

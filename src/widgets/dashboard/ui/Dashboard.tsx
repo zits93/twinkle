@@ -1,11 +1,12 @@
-import { Box, Typography, Stack, Paper, Chip } from '@mui/material';
-import { Baby, Clock, Milk, Moon, Droplets, AlertCircle } from 'lucide-react';
+import { Baby, Clock, Milk, Moon, Droplets, AlertCircle, PlusCircle, ChevronRight } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
+import { useBabyStore } from '@entities/baby';
 import { useFeedingStatus } from '@features/notify-feeding';
 import { format, differenceInMinutes } from 'date-fns';
 
 export const Dashboard = () => {
   const records = useRecordStore((state) => state.records);
+  const { babies, isLoading } = useBabyStore();
 
   const getLatestRecord = (babyId: string, category: string) => {
     return records
@@ -24,91 +25,137 @@ export const Dashboard = () => {
       : null;
 
     return (
-      <Paper className="glass" sx={{ p: 2, flex: 1, borderTop: 4, borderColor: color }}>
-        <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{name}</Typography>
-          <Baby size={18} color={color} />
-        </Stack>
+      <div className="ios-glass animate-ios-in p-6 flex-1 relative border-t-4" style={{ borderTopColor: color }}>
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center space-x-3">
+            <div 
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm"
+              style={{ backgroundColor: `${color}15` }}
+            >
+              <Baby size={22} color={color} />
+            </div>
+            <h3 className="text-xl font-black tracking-tight text-[#1C1C1E]">{name}</h3>
+          </div>
+          <ChevronRight size={18} className="text-gray-300" />
+        </div>
 
         {(status === 'HUNGRY' || status === 'OVERDUE') && (
-          <Box sx={{ mb: 2, p: 1, bgcolor: status === 'OVERDUE' ? 'rgba(239, 83, 80, 0.1)' : 'rgba(255, 167, 38, 0.1)', borderRadius: 1, display: 'flex', alignItems: 'center' }}>
-            <AlertCircle size={14} color={status === 'OVERDUE' ? '#ef5350' : '#ffa726'} style={{ marginRight: 6 }} />
-            <Typography variant="caption" sx={{ color: status === 'OVERDUE' ? '#ef5350' : '#ffa726', fontWeight: 'bold' }}>
+          <div className={`mb-8 p-4 rounded-2xl flex items-center border ${
+            status === 'OVERDUE' ? 'bg-red-50 border-red-100' : 'bg-orange-50 border-orange-100'
+          }`}>
+            <AlertCircle size={18} className={`mr-3 ${
+              status === 'OVERDUE' ? 'text-red-500' : 'text-orange-500'
+            }`} />
+            <span className={`text-sm font-black tracking-tight ${
+              status === 'OVERDUE' ? 'text-red-500' : 'text-orange-500'
+            }`}>
               {status === 'OVERDUE' ? '수유 시간 지남' : '곧 수유 시간'}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         )}
 
-        <Stack spacing={1.5}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-              <Milk size={14} color="rgba(255,255,255,0.6)" />
-              <Typography variant="caption" color="text.secondary">마지막 수유</Typography>
-            </Stack>
-            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-              {minutesSinceFeed !== null ? `${Math.floor(minutesSinceFeed / 60)}시간 ${minutesSinceFeed % 60}분 전` : '-'}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-              <Moon size={14} color="rgba(255,255,255,0.6)" />
-              <Typography variant="caption" color="text.secondary">마지막 수면</Typography>
-            </Stack>
-            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-              {lastSleep ? format(new Date(lastSleep.startTime), 'HH:mm') : '-'}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-              <Droplets size={14} color="rgba(255,255,255,0.6)" />
-              <Typography variant="caption" color="text.secondary">마지막 기저귀</Typography>
-            </Stack>
-            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-              {lastDiaper ? format(new Date(lastDiaper.startTime), 'HH:mm') : '-'}
-            </Typography>
-          </Box>
-        </Stack>
-      </Paper>
+        <div className="space-y-6">
+          {[
+            { icon: <Milk size={18} color="#007AFF" />, label: '마지막 수유', value: minutesSinceFeed !== null ? `${Math.floor(minutesSinceFeed / 60)}시간 ${minutesSinceFeed % 60}분 전` : '-' },
+            { icon: <Moon size={18} color="#5856D6" />, label: '마지막 수면', value: lastSleep ? format(new Date(lastSleep.startTime), 'HH:mm') : '-' },
+            { icon: <Droplets size={18} color="#FF9500" />, label: '기저귀 상태', value: lastDiaper ? format(new Date(lastDiaper.startTime), 'HH:mm') : '-' },
+          ].map((item, idx) => (
+            <div key={idx} className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
+                  {item.icon}
+                </div>
+                <span className="text-sm font-bold text-gray-400">{item.label}</span>
+              </div>
+              <span className="text-sm font-black text-[#1C1C1E]">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="py-24 text-center">
+        <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
+          <div className="h-full bg-blue-500 w-1/2 animate-[loading_1.5s_infinite]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (babies.length === 0) {
+    return (
+      <div className="py-16 text-center animate-ios-in">
+        <div className="w-24 h-24 bg-white rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-8">
+          <Baby size={48} className="text-gray-200" />
+        </div>
+        <h2 className="text-3xl font-black mb-3 tracking-tight">새로운 시작 👶</h2>
+        <p className="text-gray-400 text-sm font-bold mb-10 px-12 leading-relaxed">
+          트윙클의 화사한 리퀴드 환경에서 아기의 성장을 기록해 보세요.
+        </p>
+        <button 
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('changeTab', { detail: 'SETTINGS' }));
+          }}
+          className="bg-blue-600 text-white rounded-2xl px-10 py-4 font-black flex items-center justify-center mx-auto space-x-3 shadow-xl shadow-blue-500/20 active:scale-95 transition-all"
+        >
+          <PlusCircle size={22} />
+          <span>아기 등록하기</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <Box>
-      <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 3 }}>
-        대시보드
-      </Typography>
+    <div className="animate-ios-in">
+      <header className="flex justify-between items-end mb-8">
+        <h2 className="text-4xl font-black tracking-tighter">오늘</h2>
+        <span className="text-sm font-black text-gray-300 uppercase tracking-widest">{format(new Date(), 'M월 d일')}</span>
+      </header>
 
       {/* Baby Summary Row */}
-      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-        <SummaryCard babyId="baby-a" name="아기 A" color="#70D6BC" />
-        <SummaryCard babyId="baby-b" name="아기 B" color="#FF7E67" />
-      </Stack>
+      <div className="flex flex-col space-y-6 mb-10">
+        {babies.map((baby) => (
+          <SummaryCard 
+            key={baby.id} 
+            babyId={baby.id} 
+            name={baby.name} 
+            color={baby.colorTheme === 'mint' ? '#30D158' : '#FF375F'} 
+          />
+        ))}
+      </div>
 
-      {/* Sync Status Card */}
-      <Paper className="glass" sx={{ p: 2, mb: 4, bgcolor: 'rgba(255,255,255,0.03)' }}>
-        <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
-          <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>쌍둥이 싱크 상태</Typography>
-            <Typography variant="caption" color="text.secondary">두 아이의 수면 시간이 80% 일치합니다.</Typography>
-          </Box>
-          <Chip label="좋음" color="success" size="small" />
-        </Stack>
-      </Paper>
-
-      {/* Quick Actions or Next Schedule */}
-      <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-        <Clock size={16} style={{ marginRight: 8 }} /> 다음 예상 일정
-      </Typography>
-      <Paper className="glass" sx={{ p: 2 }}>
-        <Stack spacing={2}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="body2">수유 (A, B 동시)</Typography>
-            <Typography variant="body2" color="primary.main" sx={{ fontWeight: 'bold' }}>오후 3:30 예정</Typography>
-          </Box>
-        </Stack>
-      </Paper>
-    </Box>
+      {/* Grouped Info Section */}
+      <div className="mb-4 ml-1">
+        <span className="text-[11px] font-black text-gray-300 uppercase tracking-widest">인텔리전트 분석</span>
+      </div>
+      <div className="ios-glass overflow-hidden divide-y divide-gray-50">
+        <div className="p-5 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shadow-sm">
+              <Clock size={20} className="text-green-500" />
+            </div>
+            <div>
+              <p className="text-sm font-black text-[#1C1C1E]">패턴 안정도</p>
+              <p className="text-[11px] text-gray-400 font-bold">아이들의 리듬이 안정적으로 유지되고 있습니다.</p>
+            </div>
+          </div>
+          <div className="bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+            <span className="text-[10px] font-black text-green-500">EXCELLENT</span>
+          </div>
+        </div>
+        <div className="p-5 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shadow-sm">
+              <AlertCircle size={20} className="text-orange-500" />
+            </div>
+            <p className="text-sm font-black text-[#1C1C1E]">다음 예상 일정</p>
+          </div>
+          <span className="text-xs text-gray-400 font-black">분석 중</span>
+        </div>
+      </div>
+    </div>
   );
 };

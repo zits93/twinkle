@@ -1,14 +1,13 @@
 import { 
-  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer, 
   Area, 
-  AreaChart
+  AreaChart,
+  Line
 } from 'recharts';
-import { Typography, Paper, useTheme } from '@mui/material';
 import growthData from '@shared/assets/data/growth_standards.json';
 
 interface GrowthChartProps {
@@ -18,11 +17,12 @@ interface GrowthChartProps {
 }
 
 export const GrowthChart = ({ gender, babyData, babyName }: GrowthChartProps) => {
-  const theme = useTheme();
-  const standards = growthData[gender].weight;
+  const standards = (growthData as any)[gender].weight;
+  const isMale = gender === 'male';
+  const themeColor = isMale ? '#007AFF' : '#FF375F';
 
   // Combine standards and baby data for the chart
-  const data = standards.map((s) => {
+  const data = standards.map((s: any) => {
     const babyPoint = babyData.find((b) => b.month === s.month);
     return {
       ...s,
@@ -31,70 +31,80 @@ export const GrowthChart = ({ gender, babyData, babyName }: GrowthChartProps) =>
   });
 
   return (
-    <Paper className="glass" sx={{ p: 2, height: 400, width: '100%' }}>
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
+    <div className="ios-glass p-6 h-[420px] w-full">
+      <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">
         {babyName} 성장 곡선 (체중)
-      </Typography>
-      <ResponsiveContainer width="100%" height="80%">
-        <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id="colorP50" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={theme.palette.primary.main} stopOpacity={0.1}/>
-              <stop offset="95%" stopColor={theme.palette.primary.main} stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-          <XAxis 
-            dataKey="month" 
-            label={{ value: '개월', position: 'insideBottomRight', offset: -5 }} 
-            stroke="rgba(255,255,255,0.5)"
-          />
-          <YAxis 
-            label={{ value: 'kg', angle: -90, position: 'insideLeft' }} 
-            stroke="rgba(255,255,255,0.5)"
-          />
-          <Tooltip 
-            contentStyle={{ backgroundColor: '#333', border: 'none', borderRadius: 8 }}
-            itemStyle={{ color: '#fff' }}
-          />
-          
-          {/* Normal Range Area (p5 to p95) */}
-          <Area 
-            type="monotone" 
-            dataKey="p95" 
-            stroke="none" 
-            fill="rgba(255,255,255,0.05)" 
-          />
-          <Area 
-            type="monotone" 
-            dataKey="p5" 
-            stroke="none" 
-            fill="#242424" 
-          />
+      </h3>
+      <div className="h-[280px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id={`colorBaby-${babyName}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={themeColor} stopOpacity={0.2}/>
+                <stop offset="95%" stopColor={themeColor} stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.03)" vertical={false} />
+            <XAxis 
+              dataKey="month" 
+              stroke="rgba(0,0,0,0.2)"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontWeight: 600 }}
+            />
+            <YAxis 
+              stroke="rgba(0,0,0,0.2)"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontWeight: 600 }}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                border: '0.5px solid rgba(0,0,0,0.05)', 
+                borderRadius: '16px',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
+              }}
+              itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+            />
+            
+            {/* Normal Range Area (p5 to p95) */}
+            <Area 
+              type="monotone" 
+              dataKey="p95" 
+              stroke="none" 
+              fill="rgba(0,0,0,0.02)" 
+            />
+            
+            {/* Baby's Actual Data Area */}
+            <Area 
+              type="monotone" 
+              dataKey="babyWeight" 
+              stroke={themeColor} 
+              strokeWidth={4}
+              fillOpacity={1}
+              fill={`url(#colorBaby-${babyName})`}
+              name={babyName}
+            />
 
-          {/* Median Line */}
-          <Line 
-            type="monotone" 
-            dataKey="p50" 
-            stroke="rgba(255,255,255,0.3)" 
-            strokeDasharray="5 5" 
-            dot={false}
-          />
-
-          {/* Baby's Actual Data */}
-          <Line 
-            type="monotone" 
-            dataKey="babyWeight" 
-            stroke={theme.palette.primary.main} 
-            strokeWidth={3}
-            dot={{ r: 6, fill: theme.palette.primary.main }}
-            name={babyName}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            {/* Median Line */}
+            <Line 
+              type="monotone" 
+              dataKey="p50" 
+              stroke="rgba(0,0,0,0.1)" 
+              strokeDasharray="5 5" 
+              dot={false}
+              name="평균"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      <p className="text-[10px] font-bold text-gray-300 mt-6 leading-relaxed">
         * 회색 영역은 하위 5% ~ 상위 5% 정상 범위를 나타냅니다. 점선은 평균값(50%)입니다.
-      </Typography>
-    </Paper>
+      </p>
+    </div>
   );
 };
