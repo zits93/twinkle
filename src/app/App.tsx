@@ -1,12 +1,11 @@
-import { useState } from 'react'
-import { Container, Box, Typography, Button, Stack } from '@mui/material'
-import { Activity, PieChart, Settings } from 'lucide-react'
+import { Activity, PieChart, Settings, Home } from 'lucide-react'
 import { AddRecordForm } from '@features/add-record'
 import { RecordTimeline } from '@widgets/record-timeline'
 import { StatsPage } from '@pages/stats'
+import { Dashboard } from '@widgets/dashboard'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'RECORD' | 'STATS' | 'SETTINGS'>('RECORD')
+  const [activeTab, setActiveTab] = useState<'HOME' | 'RECORD' | 'STATS' | 'SETTINGS'>('HOME')
 
   return (
     <Container maxWidth="sm" sx={{ py: 4, pb: 10 }}>
@@ -18,6 +17,10 @@ function App() {
           Smart Twin Parenting Log
         </Typography>
       </Box>
+
+      {activeTab === 'HOME' && (
+        <Dashboard />
+      )}
 
       {activeTab === 'RECORD' && (
         <Box sx={{ animate: 'fadeIn 0.5s' }}>
@@ -41,6 +44,14 @@ function App() {
       {/* Bottom Navigation */}
       <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, bgcolor: 'background.paper', p: 1, borderTop: 1, borderColor: 'divider', zIndex: 1000 }}>
         <Stack direction="row" justifyContent="space-around">
+          <Button 
+            onClick={() => setActiveTab('HOME')}
+            color={activeTab === 'HOME' ? 'primary' : 'inherit'}
+            startIcon={<Home size={20} />} 
+            sx={{ flexDirection: 'column', fontSize: '10px' }}
+          >
+            홈
+          </Button>
           <Button 
             onClick={() => setActiveTab('RECORD')}
             color={activeTab === 'RECORD' ? 'primary' : 'inherit'}
