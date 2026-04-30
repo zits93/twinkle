@@ -93,7 +93,7 @@ export const SettingsPage = () => {
       name: '',
       birthDate: new Date().toISOString().split('T')[0],
       gender: 'M',
-      colorTheme: 'mint'
+      colorTheme: '#30D158'
     });
     setIsAddBabyOpen(true);
   };
@@ -218,11 +218,11 @@ export const SettingsPage = () => {
                 <div className="flex items-center space-x-4">
                   <div 
                     className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
-                    style={{ backgroundColor: baby.colorTheme === 'mint' ? '#30D15815' : '#FF375F15' }}
+                    style={{ backgroundColor: `${baby.colorTheme}15` }}
                   >
                     <Baby 
                       size={22} 
-                      color={baby.colorTheme === 'mint' ? '#30D158' : '#FF375F'} 
+                      color={baby.colorTheme} 
                     />
                   </div>
                   <div>
