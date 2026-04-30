@@ -15,7 +15,7 @@ export const LoginForm = () => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.href,
+        emailRedirectTo: 'https://zits93.github.io/twinkle/',
       },
     });
 
@@ -33,7 +33,7 @@ export const LoginForm = () => {
         <div className="bg-blue-600 p-4 rounded-full text-white shadow-lg shadow-blue-900/30">
           <Mail size={32} />
         </div>
-        
+
         <div className="text-center">
           <h2 className="text-2xl font-black tracking-tight mb-1">Twinkle ✨</h2>
           <p className="text-sm font-medium text-gray-500">이메일로 간편하게 시작하세요</p>
@@ -65,9 +65,8 @@ export const LoginForm = () => {
         </form>
 
         {message && (
-          <p className={`text-sm font-bold text-center ${
-            message.type === 'success' ? 'text-blue-500' : 'text-red-500'
-          }`}>
+          <p className={`text-sm font-bold text-center ${message.type === 'success' ? 'text-blue-500' : 'text-red-500'
+            }`}>
             {message.text}
           </p>
         )}
