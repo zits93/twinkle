@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Container, Box, Typography, Button, Stack } from '@mui/material'
-import { Baby, Activity, PieChart, Settings } from 'lucide-react'
+import { Activity, PieChart, Settings } from 'lucide-react'
+import { AddRecordForm } from '@features/add-record'
 
 function App() {
-  const [activeBaby, setActiveBaby] = useState<'A' | 'B' | 'BOTH'>('A')
+  const [activeTab, setActiveTab] = useState<'RECORD' | 'STATS' | 'SETTINGS'>('RECORD')
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
+    <Container maxWidth="sm" sx={{ py: 4, pb: 10 }}>
       <Box className="glass" sx={{ p: 3, mb: 4, textAlign: 'center' }}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
           Twinkle ✨
@@ -16,44 +17,47 @@ function App() {
         </Typography>
       </Box>
 
-      <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 4 }}>
-        <Button 
-          variant={activeBaby === 'A' ? 'contained' : 'outlined'} 
-          color="primary"
-          onClick={() => setActiveBaby('A')}
-          startIcon={<Baby size={18} />}
-        >
-          아기 A
-        </Button>
-        <Button 
-          variant={activeBaby === 'B' ? 'contained' : 'outlined'} 
-          color="secondary"
-          onClick={() => setActiveBaby('B')}
-          startIcon={<Baby size={18} />}
-        >
-          아기 B
-        </Button>
-        <Button 
-          variant={activeBaby === 'BOTH' ? 'contained' : 'outlined'} 
-          sx={{ color: 'white', borderColor: 'white' }}
-          onClick={() => setActiveBaby('BOTH')}
-        >
-          둘 다
-        </Button>
-      </Stack>
+      {activeTab === 'RECORD' && (
+        <Box sx={{ animate: 'fadeIn 0.5s' }}>
+          <AddRecordForm />
+        </Box>
+      )}
 
-      <Box sx={{ flexGrow: 1, minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography variant="h6" color="text.secondary">
-          {activeBaby === 'BOTH' ? '쌍둥이 동시 기록 모드' : `아기 ${activeBaby} 기록 화면`}
-        </Typography>
-      </Box>
+      {activeTab !== 'RECORD' && (
+        <Box sx={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography variant="h6" color="text.secondary">
+            준비 중인 기능입니다 🚧
+          </Typography>
+        </Box>
+      )}
 
-      {/* Bottom Navigation Mockup */}
-      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, bgcolor: 'background.paper', p: 1, borderTop: 1, borderColor: 'divider' }}>
+      {/* Bottom Navigation */}
+      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, bgcolor: 'background.paper', p: 1, borderTop: 1, borderColor: 'divider', zIndex: 1000 }}>
         <Stack direction="row" justifyContent="space-around">
-          <Button startIcon={<Activity size={20} />} sx={{ flexDirection: 'column', fontSize: '10px' }}>기록</Button>
-          <Button startIcon={<PieChart size={20} />} sx={{ flexDirection: 'column', fontSize: '10px' }}>통계</Button>
-          <Button startIcon={<Settings size={20} />} sx={{ flexDirection: 'column', fontSize: '10px' }}>설정</Button>
+          <Button 
+            onClick={() => setActiveTab('RECORD')}
+            color={activeTab === 'RECORD' ? 'primary' : 'inherit'}
+            startIcon={<Activity size={20} />} 
+            sx={{ flexDirection: 'column', fontSize: '10px' }}
+          >
+            기록
+          </Button>
+          <Button 
+            onClick={() => setActiveTab('STATS')}
+            color={activeTab === 'STATS' ? 'primary' : 'inherit'}
+            startIcon={<PieChart size={20} />} 
+            sx={{ flexDirection: 'column', fontSize: '10px' }}
+          >
+            통계
+          </Button>
+          <Button 
+            onClick={() => setActiveTab('SETTINGS')}
+            color={activeTab === 'SETTINGS' ? 'primary' : 'inherit'}
+            startIcon={<Settings size={20} />} 
+            sx={{ flexDirection: 'column', fontSize: '10px' }}
+          >
+            설정
+          </Button>
         </Stack>
       </Box>
     </Container>
