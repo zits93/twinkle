@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { RecordEntry } from '@shared/types/record';
+import { type RecordEntry } from '@shared/types/record';
 import { recordService } from '../api/recordService';
 
 interface RecordState {
@@ -15,7 +15,7 @@ interface RecordState {
 export const useRecordStore = create<RecordState>((set, get) => ({
   records: [],
   isLoading: false,
-  
+
   initializeRecords: async (babyIds: string[]) => {
     set({ isLoading: true });
     try {

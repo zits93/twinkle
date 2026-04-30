@@ -1,5 +1,5 @@
 import { supabase } from '@shared/api/supabase';
-import { RecordEntry } from '@shared/types/record';
+import { type RecordEntry } from '@shared/types/record';
 
 export const recordService = {
   async fetchRecords(babyIds: string[]) {
