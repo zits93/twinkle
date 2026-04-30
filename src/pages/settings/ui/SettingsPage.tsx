@@ -6,34 +6,37 @@ import {
   ChevronRight,
   LogOut,
   Plus,
-  Minus,
-  X
+  Zap,
+  Sparkles,
+  Settings2
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useUserSettingsStore } from '@entities/user-settings';
 import { useSessionStore } from '@entities/session';
 import { useBabyStore } from '@entities/baby';
+import { useRecordStore } from '@entities/record';
 import { babyService } from '@entities/baby/api/babyService';
 import { supabase } from '@shared/api/supabase';
 import { Edit2 } from 'lucide-react';
+import { differenceInMinutes } from 'date-fns';
 
 export const SettingsPage = () => {
   const { babies, initializeBabies } = useBabyStore();
+  const { records } = useRecordStore();
   const firstBabyId = babies[0]?.id;
 
   const { 
     feedingInterval, 
+    autoFeedingInterval,
     muteDuringNight, 
-    customCategories,
-    setFeedingInterval, 
-    setMuteDuringNight,
-    addCustomType,
-    removeCustomType
+    autoNightMode,
+    nightStartTime,
+    nightEndTime,
+    updateSettings
   } = useUserSettingsStore();
 
   const { user, signOut } = useSessionStore();
 
-  const [newCategory, setNewCategory] = useState('');
   const [isAddBabyOpen, setIsAddBabyOpen] = useState(false);
   const [newBaby, setNewBaby] = useState({
     name: '',
@@ -45,14 +48,28 @@ export const SettingsPage = () => {
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || '양육자');
 
-  const [activeCategory, setActiveCategory] = useState('SOLID');
+  // Calculate Auto Feeding Interval
+  const calculatedInterval = useMemo(() => {
+    if (!firstBabyId) return 180;
+    const feedingRecords = records
+      .filter(r => r.babyId === firstBabyId && r.category === 'FEEDING')
+      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+      .slice(0, 11); // Need 11 to get 10 intervals
 
-  const handleAddType = () => {
-    if (newCategory.trim()) {
-      addCustomType(activeCategory, newCategory.trim(), firstBabyId);
-      setNewCategory('');
+    if (feedingRecords.length < 3) return 180;
+
+    const intervals = [];
+    for (let i = 0; i < feedingRecords.length - 1; i++) {
+      const diff = differenceInMinutes(new Date(feedingRecords[i].startTime), new Date(feedingRecords[i+1].startTime));
+      if (diff > 60 && diff < 420) { // Valid interval between 1h and 7h
+        intervals.push(diff);
+      }
     }
-  };
+
+    if (intervals.length === 0) return 180;
+    const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+    return Math.round(avg / 10) * 10; // Round to 10 mins
+  }, [records, firstBabyId]);
 
   const handleAddBaby = async () => {
     if (!newBaby.name) return;
@@ -88,6 +105,8 @@ export const SettingsPage = () => {
       console.error('이름 수정 실패:', err);
     }
   };
+
+  const currentFeedingInterval = autoFeedingInterval ? calculatedInterval : feedingInterval;
 
   return (
     <div className="animate-ios-in space-y-8 pb-10">
@@ -163,18 +182,40 @@ export const SettingsPage = () => {
       {babies.length > 0 && (
         <div className="space-y-8">
           <div>
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 block px-1">알림 및 기능</span>
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 block px-1">스마트 수유 설정</span>
             <div className="ios-glass p-6 space-y-6 border border-white">
-              <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
+                    <Zap size={18} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#1C1C1E]">수유 주기 자동 계산</p>
+                    <p className="text-[10px] font-medium text-gray-400">최근 패턴 분석 기반 제안</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => updateSettings(firstBabyId, { autoFeedingInterval: !autoFeedingInterval })}
+                  className={`w-12 h-7 rounded-full p-1 transition-colors duration-200 ${
+                    autoFeedingInterval ? 'bg-orange-500' : 'bg-gray-100'
+                  }`}
+                >
+                  <div className={`bg-white w-5 h-5 rounded-full shadow-md transition-transform duration-200 ${
+                    autoFeedingInterval ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </button>
+              </div>
+
+              <div className={`space-y-5 transition-opacity ${autoFeedingInterval ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
                       <Clock size={18} />
                     </div>
-                    <span className="text-sm font-bold text-[#1C1C1E]">수유 주기</span>
+                    <span className="text-sm font-bold text-[#1C1C1E]">권장 주기</span>
                   </div>
                   <span className="text-sm font-black text-blue-500">
-                    {Math.floor(feedingInterval / 60)}시간 {feedingInterval % 60 > 0 ? `${feedingInterval % 60}분` : ''}
+                    {Math.floor(currentFeedingInterval / 60)}시간 {currentFeedingInterval % 60 > 0 ? `${currentFeedingInterval % 60}분` : ''}
                   </span>
                 </div>
                 <input 
@@ -182,28 +223,39 @@ export const SettingsPage = () => {
                   min="60" 
                   max="300" 
                   step="15"
+                  disabled={autoFeedingInterval}
                   value={feedingInterval}
-                  onChange={(e) => setFeedingInterval(parseInt(e.target.value), firstBabyId)}
+                  onChange={(e) => updateSettings(firstBabyId, { feedingInterval: parseInt(e.target.value) })}
                   className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-blue-500"
                 />
               </div>
+              
+              {autoFeedingInterval && (
+                <div className="bg-orange-50/50 p-3 rounded-xl flex items-center space-x-2 border border-orange-100 animate-ios-in">
+                  <Sparkles size={14} className="text-orange-500" />
+                  <p className="text-[11px] font-bold text-orange-600">최근 패턴을 분석하여 {Math.floor(calculatedInterval / 60)}시간 {calculatedInterval % 60}분으로 설정되었습니다.</p>
+                </div>
+              )}
+            </div>
+          </div>
 
-              <div className="h-px bg-gray-50" />
-
+          <div>
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 block px-1">밤잠 모드 최적화</span>
+            <div className="ios-glass p-6 space-y-6 border border-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
                     <Moon size={18} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#1C1C1E]">밤잠 모드 자동화</p>
-                    <p className="text-[10px] font-medium text-gray-400">밤잠 중 수유 알림 무음 처리</p>
+                    <p className="text-sm font-bold text-[#1C1C1E]">밤잠 중 알림 무음</p>
+                    <p className="text-[10px] font-medium text-gray-400">수유 알림 소리 끄기</p>
                   </div>
                 </div>
                 <button 
-                  onClick={() => setMuteDuringNight(!muteDuringNight, firstBabyId)}
+                  onClick={() => updateSettings(firstBabyId, { muteDuringNight: !muteDuringNight })}
                   className={`w-12 h-7 rounded-full p-1 transition-colors duration-200 ${
-                    muteDuringNight ? 'bg-green-500' : 'bg-gray-100'
+                    muteDuringNight ? 'bg-indigo-500' : 'bg-gray-100'
                   }`}
                 >
                   <div className={`bg-white w-5 h-5 rounded-full shadow-md transition-transform duration-200 ${
@@ -211,62 +263,57 @@ export const SettingsPage = () => {
                   }`} />
                 </button>
               </div>
-            </div>
-          </div>
 
-          <div>
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 block px-1">기록 항목 설정</span>
-            <div className="ios-glass p-6 space-y-6 border border-white">
-              {/* Category Selector for Settings */}
-              <div className="bg-gray-50 p-1 rounded-xl flex space-x-1 mb-4">
-                {['SOLID', 'SNACK', 'ACTIVITY', 'CUSTOM'].map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`flex-1 py-1.5 text-[10px] font-black rounded-lg transition-all ${
-                      activeCategory === cat ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-400'
-                    }`}
-                  >
-                    {cat === 'SOLID' ? '이유식' : cat === 'SNACK' ? '간식' : cat === 'ACTIVITY' ? '활동' : '기타'}
-                  </button>
-                ))}
-              </div>
+              <div className="h-px bg-gray-50" />
 
-              <div className="flex flex-wrap gap-2 min-h-[40px]">
-                {(customCategories[activeCategory] || []).map((type) => (
-                  <div 
-                    key={type} 
-                    className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 animate-ios-in"
-                  >
-                    <span className="text-xs font-bold text-blue-700">{type}</span>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#1C1C1E]">밤잠 구간 설정</span>
+                  <div className="flex p-1 bg-gray-50 rounded-xl space-x-1">
                     <button 
-                      onClick={() => removeCustomType(activeCategory, type, firstBabyId)}
-                      className="text-blue-300 hover:text-red-500"
-                    >
-                      <X size={14} />
-                    </button>
+                      onClick={() => updateSettings(firstBabyId, { autoNightMode: false })}
+                      className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${!autoNightMode ? 'bg-white text-indigo-500 shadow-sm' : 'text-gray-400'}`}
+                    >수동</button>
+                    <button 
+                      onClick={() => updateSettings(firstBabyId, { autoNightMode: true })}
+                      className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${autoNightMode ? 'bg-white text-indigo-500 shadow-sm' : 'text-gray-400'}`}
+                    >자동 감지</button>
                   </div>
-                ))}
-                {(customCategories[activeCategory] || []).length === 0 && (
-                  <p className="text-xs text-gray-300 py-2">추가된 항목이 없습니다.</p>
-                )}
-              </div>
+                </div>
 
-              <div className="flex space-x-2">
-                <input 
-                  type="text" 
-                  placeholder={`${activeCategory === 'SOLID' ? '이유식' : activeCategory === 'SNACK' ? '간식' : activeCategory === 'ACTIVITY' ? '활동' : '기타'} 종류 추가`} 
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddType()}
-                  className="flex-1 bg-gray-50 rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-100 text-[#1C1C1E]"
-                />
-                <button 
-                  onClick={handleAddType}
-                  className="bg-blue-600 text-white p-2 rounded-xl shadow-lg shadow-blue-500/20"
-                >
-                  <Plus size={20} />
-                </button>
+                {!autoNightMode ? (
+                  <div className="flex items-center space-x-2 animate-ios-in">
+                    <div className="flex-1 bg-gray-50 rounded-xl p-3 text-center">
+                      <p className="text-[9px] font-black text-gray-400 uppercase mb-1">시작</p>
+                      <input 
+                        type="time" 
+                        value={nightStartTime}
+                        onChange={(e) => updateSettings(firstBabyId, { nightStartTime: e.target.value })}
+                        className="bg-transparent text-sm font-black text-[#1C1C1E] outline-none"
+                      />
+                    </div>
+                    <div className="w-4 h-px bg-gray-200" />
+                    <div className="flex-1 bg-gray-50 rounded-xl p-3 text-center">
+                      <p className="text-[9px] font-black text-gray-400 uppercase mb-1">종료</p>
+                      <input 
+                        type="time" 
+                        value={nightEndTime}
+                        onChange={(e) => updateSettings(firstBabyId, { nightEndTime: e.target.value })}
+                        className="bg-transparent text-sm font-black text-[#1C1C1E] outline-none"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 animate-ios-in">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Sparkles size={14} className="text-indigo-500" />
+                      <p className="text-xs font-black text-indigo-600">지능형 밤잠 감지 중</p>
+                    </div>
+                    <p className="text-[10px] font-bold text-indigo-400 leading-relaxed">
+                      8시간 이상의 연속 수면 패턴이 감지되면 자동으로 밤잠 모드로 전환됩니다.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -33,8 +33,12 @@ create table user_settings (
   id uuid primary key default uuid_generate_v4(),
   baby_id uuid not null references babies(id) on delete cascade,
   feeding_interval integer default 180, -- 수유 주기(분 단위, 기본 3시간)
+  auto_feeding_interval boolean default false, -- 수유 주기 자동 계산 여부
   mute_during_night boolean default true, -- 밤잠 중 알림 끄기 여부
-  custom_categories jsonb default '[]'::jsonb,
+  auto_night_mode boolean default false, -- 밤잠 구간 자동 감지 여부
+  night_start_time text default '19:00', -- 밤잠 시작 시간 (수동)
+  night_end_time text default '07:00', -- 밤잠 종료 시간 (수동)
+  custom_categories jsonb default '{}'::jsonb,
   updated_at timestamp with time zone default now()
 );
 
