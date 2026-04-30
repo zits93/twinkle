@@ -41,22 +41,49 @@ const POO_COLORS: Record<string, string> = {
   '흰색': '#FFFFFF',
 };
 
+const categoryLabels: Record<string, string> = {
+  FEEDING: '수유',
+  SOLID: '이유식',
+  SNACK: '간식',
+  WATER: '물',
+  MILK: '우유',
+  SLEEP: '수면',
+  DIAPER: '기저귀',
+  ACTIVITY: '활동',
+  HEALTH: '건강',
+  CUSTOM: '기타',
+};
+
 export const RecordItem = ({ record }: RecordItemProps) => {
   const { babies } = useBabyStore();
   const baby = babies.find(b => b.id === record.babyId);
   const themeColor = baby?.colorTheme === 'mint' ? '#30D158' : '#FF375F';
 
   const renderValue = () => {
+    const label = categoryLabels[record.category] || record.category;
+    
     if (['FEEDING', 'SOLID', 'SNACK', 'WATER', 'MILK'].includes(record.category)) {
-      return `${record.value}ml`;
+      const amount = record.value ? `${record.value}ml` : '';
+      const type = record.subCategory && record.subCategory !== '기본' ? `(${record.subCategory})` : '';
+      return `${label} ${amount} ${type}`.trim();
     }
-    if (record.category === 'SLEEP' && record.endTime) {
-      const mins = differenceInMinutes(new Date(record.endTime), new Date(record.startTime));
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
-      return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+    
+    if (record.category === 'SLEEP') {
+      if (record.endTime) {
+        const mins = differenceInMinutes(new Date(record.endTime), new Date(record.startTime));
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        const duration = h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+        return `${label} ${duration}`;
+      }
+      return `${label} 중...`;
     }
-    return record.subCategory;
+
+    if (record.category === 'DIAPER') {
+      return `${label} (${record.subCategory || '기본'})`;
+    }
+
+    return `${label} (${record.subCategory || '기본'})`;
   };
   
   return (
@@ -85,7 +112,7 @@ export const RecordItem = ({ record }: RecordItemProps) => {
             )}
           </div>
           <p className="text-[10px] font-bold text-gray-400 mt-0.5">
-            {format(new Date(record.startTime), 'HH:mm')} • {record.note || record.category}
+            {format(new Date(record.startTime), 'HH:mm')} • {record.note || categoryLabels[record.category] || record.category}
           </p>
         </div>
       </div>
