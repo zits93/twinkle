@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { 
   XAxis, 
   YAxis, 
@@ -6,38 +7,55 @@ import {
   ResponsiveContainer, 
   Area, 
   AreaChart,
-  Line
 } from 'recharts';
 import growthData from '@shared/assets/data/growth_standards.json';
 
 interface GrowthChartProps {
   gender: 'male' | 'female';
-  babyData: { month: number; weight: number }[];
+  babyData: { month: number; weight?: number; height?: number }[];
   babyName: string;
-  colorTheme: 'mint' | 'coral';
+  colorTheme: string;
 }
 
 export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthChartProps) => {
-  const standards = (growthData as any)[gender].weight;
-  const themeColor = colorTheme === 'mint' ? '#30D158' : '#FF375F';
+  const [mode, setMode] = useState<'weight' | 'height'>('weight');
+  const standards = (growthData as any)[gender][mode];
+  const themeColor = colorTheme;
   
-  // Safe ID for SVG gradients (avoiding special characters/Korean)
-  const gradientId = `colorBaby-${colorTheme}-${gender}`;
+  const gradientId = `colorBaby-${colorTheme.replace('#', '')}-${gender}-${mode}`;
 
-  // Combine standards and baby data for the chart
   const data = standards.map((s: any) => {
     const babyPoint = babyData.find((b) => b.month === s.month);
     return {
       ...s,
-      babyWeight: babyPoint?.weight,
+      babyValue: mode === 'weight' ? babyPoint?.weight : babyPoint?.height,
     };
   });
 
   return (
-    <div className="ios-glass p-6 h-[420px] w-full border border-white">
-      <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">
-        {babyName} 성장 곡선 (체중)
-      </h3>
+    <div className="ios-glass p-6 h-[460px] w-full border border-white">
+      <div className="flex justify-between items-center mb-8">
+        <h3 className="text-lg font-bold tracking-tight text-[#1C1C1E]">
+          {babyName} 성장 곡선
+        </h3>
+        <div className="flex bg-gray-100 p-1 rounded-xl space-x-1">
+          <button 
+            onClick={() => setMode('weight')}
+            className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${
+              mode === 'weight' ? 'bg-white shadow-sm' : 'text-gray-400'
+            }`}
+            style={{ color: mode === 'weight' ? themeColor : undefined }}
+          >체중</button>
+          <button 
+            onClick={() => setMode('height')}
+            className={`px-4 py-1.5 text-[10px] font-black rounded-lg transition-all ${
+              mode === 'height' ? 'bg-white shadow-sm' : 'text-gray-400'
+            }`}
+            style={{ color: mode === 'height' ? themeColor : undefined }}
+          >키</button>
+        </div>
+      </div>
+
       <div className="h-[280px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -63,7 +81,7 @@ export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthCh
               tickLine={false}
               axisLine={false}
               tick={{ fontWeight: 600, fill: '#636366' }}
-              label={{ value: 'kg', position: 'insideTopLeft', offset: 0, fontSize: 10, fill: '#636366' }}
+              label={{ value: mode === 'weight' ? 'kg' : 'cm', position: 'insideTopLeft', offset: 0, fontSize: 10, fill: '#636366' }}
             />
             <Tooltip 
               contentStyle={{ 
@@ -78,7 +96,6 @@ export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthCh
               labelStyle={{ color: '#636366', marginBottom: '4px', fontSize: '10px', fontWeight: 'bold' }}
             />
             
-            {/* Standard Range Area (p3 to p97) */}
             <Area 
               type="monotone" 
               dataKey="p97" 
@@ -94,7 +111,6 @@ export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthCh
               connectNulls
             />
             
-            {/* Median Line (p50) */}
             <Area
               type="monotone"
               dataKey="p50"
@@ -105,10 +121,9 @@ export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthCh
               connectNulls
             />
             
-            {/* Baby's Actual Data Area */}
             <Area 
               type="monotone" 
-              dataKey="babyWeight" 
+              dataKey="babyValue" 
               stroke={themeColor} 
               strokeWidth={4}
               fillOpacity={1}
@@ -122,10 +137,10 @@ export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthCh
       </div>
       <div className="mt-8 space-y-1">
         <p className="text-[10px] font-bold text-gray-400 leading-relaxed">
-          * 회색 영역은 하위 3% ~ 상위 3% 표준 범위를 나타냅니다.
+          * 회색 영역은 하위 3% ~ 상위 3% 표준 범위를 나타냅니다. (WHO 기준)
         </p>
         <p className="text-[10px] font-bold text-gray-400 leading-relaxed">
-          * 점선은 WHO 표준 성장 곡선의 중위값(50%)입니다.
+          * 점선은 표준 성장 곡선의 중위값(50%)입니다.
         </p>
       </div>
     </div>

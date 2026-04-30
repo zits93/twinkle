@@ -8,7 +8,7 @@ create table babies (
   name text not null,
   birth_date timestamp with time zone not null,
   gender text check (gender in ('boy', 'girl')),
-  color_theme text check (color_theme in ('mint', 'coral')),
+  color_theme text,
   profile_image_url text,
   created_at timestamp with time zone default now()
 );

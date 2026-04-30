@@ -130,14 +130,31 @@ export const StatsPage = () => {
 
         <div className="space-y-6">
           {babies.map((baby, idx) => {
-            // Filter real growth data for this baby
-            const babyGrowthRecords = records
-              .filter(r => r.babyId === baby.id && r.category === 'GROWTH' && r.subCategory === '체중')
-              .map(r => ({
-                month: Math.floor(differenceInMinutes(new Date(r.startTime), new Date(baby.birthDate)) / (60 * 24 * 30.44)), // Rough month calculation
-                weight: r.value
-              }))
-              .sort((a, b) => a.month - b.month);
+            // Filter real growth data for this baby (Group by month)
+            const growthByMonth = records
+              .filter(r => r.babyId === baby.id && r.category === 'GROWTH')
+              .reduce((acc: any, r) => {
+                const month = Math.floor(Math.abs(new Date(r.startTime).getTime() - new Date(baby.birthDate).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+                if (!acc[month]) acc[month] = { month };
+                if (r.subCategory === '체중') acc[month].weight = r.value;
+                if (r.subCategory === '키') acc[month].height = r.value;
+                return acc;
+              }, {});
+
+            const babyGrowthRecords = Object.values(growthByMonth).sort((a: any, b: any) => a.month - b.month);
+            
+            // Temporary mock data if no real records exist
+            const mockData = idx === 0 
+              ? [
+                  { month: 0, weight: 3.2, height: 49.9 },
+                  { month: 1, weight: 4.5, height: 54.7 },
+                  { month: 2, weight: 5.8, height: 58.4 },
+                ]
+              : [
+                  { month: 0, weight: 3.0, height: 49.1 },
+                  { month: 1, weight: 4.1, height: 53.7 },
+                  { month: 2, weight: 5.2, height: 57.1 },
+                ];
 
             return (
               <GrowthChart 
@@ -145,7 +162,7 @@ export const StatsPage = () => {
                 gender={baby.gender === 'F' ? 'female' : 'male'} 
                 babyName={baby.name} 
                 colorTheme={baby.colorTheme}
-                babyData={babyGrowthRecords.length > 0 ? babyGrowthRecords : (idx === 0 ? babyAWeightData : babyBWeightData)} 
+                babyData={babyGrowthRecords.length > 0 ? babyGrowthRecords as any : mockData} 
               />
             );
           })}
