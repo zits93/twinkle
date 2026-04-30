@@ -12,7 +12,9 @@ import {
   Clock,
   Plus,
   Minus,
-  X
+  X,
+  Scale,
+  Ruler
 } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
 import { useBabyStore } from '@entities/baby';
@@ -24,6 +26,7 @@ const CATEGORIES = [
   { id: 'FEEDING', label: '수유', icon: <Milk size={20} />, color: '#007AFF' },
   { id: 'SOLID', label: '이유식', icon: <Utensils size={20} />, color: '#5856D6' },
   { id: 'SNACK', label: '간식', icon: <Apple size={20} />, color: '#FF9500' },
+  { id: 'GROWTH', label: '성장', icon: <Scale size={20} />, color: '#FF2D55' },
   { id: 'WATER', label: '물', icon: <Droplet size={20} />, color: '#00BFFF' },
   { id: 'SLEEP', label: '수면', icon: <Moon size={20} />, color: '#AF52DE' },
   { id: 'DIAPER', label: '기저귀', icon: <Droplets size={20} />, color: '#FFCC00' },
@@ -35,6 +38,7 @@ const CATEGORIES = [
 const FEEDING_TYPES = ['분유', '모유', '유축'];
 const SOLID_TYPES = ['미음', '소고기', '과일', '채소'];
 const SNACK_TYPES = ['우유', '퓨레', '치즈'];
+const GROWTH_TYPES = ['체중', '키'];
 const SLEEP_TYPES = ['낮잠', '밤잠'];
 const DIAPER_TYPES = ['소변', '대변'];
 const ACTIVITY_TYPES = ['목욕', '터미타임', '놀이', '산책'];
@@ -88,6 +92,7 @@ export const AddRecordForm = () => {
       if (category === 'FEEDING') setSubCategory('분유');
       else if (category === 'SOLID') setSubCategory('미음');
       else if (category === 'SNACK') setSubCategory('우유');
+      else if (category === 'GROWTH') setSubCategory('체중');
       else if (category === 'SLEEP') setSubCategory('낮잠');
       else if (category === 'DIAPER') setSubCategory('소변');
       else if (category === 'ACTIVITY') setSubCategory('목욕');
@@ -98,9 +103,10 @@ export const AddRecordForm = () => {
   }, [category, records]);
 
   const handleAdjustAmount = (delta: number) => {
-    const current = parseInt(amount) || 0;
+    const current = parseFloat(amount) || 0;
     const next = Math.max(0, current + delta);
-    setAmount(next.toString());
+    // For weight/height, we might want decimal precision
+    setAmount(category === 'GROWTH' ? next.toFixed(2).replace(/\.?0+$/, '') : next.toString());
   };
 
   const handleAddType = async () => {
@@ -156,6 +162,7 @@ export const AddRecordForm = () => {
     const base = category === 'FEEDING' ? FEEDING_TYPES : 
                  category === 'SOLID' ? SOLID_TYPES :
                  category === 'SNACK' ? SNACK_TYPES :
+                 category === 'GROWTH' ? GROWTH_TYPES :
                  category === 'SLEEP' ? SLEEP_TYPES :
                  category === 'DIAPER' ? DIAPER_TYPES :
                  category === 'ACTIVITY' ? ACTIVITY_TYPES : 
@@ -163,6 +170,14 @@ export const AddRecordForm = () => {
     
     const custom = customCategories[category] || [];
     return [...base, ...custom];
+  };
+
+  const getUnit = () => {
+    if (['FEEDING', 'SOLID', 'SNACK', 'WATER'].includes(category)) return 'ml';
+    if (category === 'GROWTH') {
+      return subCategory === '키' ? 'cm' : 'kg';
+    }
+    return '';
   };
 
   if (babies.length === 0) return null;
@@ -241,7 +256,7 @@ export const AddRecordForm = () => {
               {type}
             </button>
           ))}
-          {['SOLID', 'SNACK', 'ACTIVITY', 'CUSTOM'].includes(category) && (
+          {['SOLID', 'SNACK', 'ACTIVITY', 'CUSTOM', 'GROWTH'].includes(category) && (
             <button
               type="button"
               onClick={() => setIsAddingType(true)}
@@ -319,25 +334,25 @@ export const AddRecordForm = () => {
             </div>
           )}
 
-          {['FEEDING', 'SOLID', 'SNACK', 'WATER'].includes(category) && (
+          {['FEEDING', 'SOLID', 'SNACK', 'WATER', 'GROWTH'].includes(category) && (
             <div className="p-5 space-y-6">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-gray-400">양 (ml)</span>
+                <span className="text-sm font-bold text-gray-400">값 ({getUnit()})</span>
                 <div className="flex items-center">
                   <input
                     type="number"
-                    step="5"
+                    step={category === 'GROWTH' ? '0.01' : '5'}
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="bg-transparent text-right font-black text-4xl w-24 outline-none text-[#1C1C1E]"
+                    className="bg-transparent text-right font-black text-4xl w-32 outline-none text-[#1C1C1E]"
                     placeholder="0"
                   />
-                  <span className="ml-2 font-bold text-blue-500">ml</span>
+                  <span className="ml-2 font-bold text-blue-500">{getUnit()}</span>
                 </div>
               </div>
               
               <div className="grid grid-cols-6 gap-2">
-                {[-20, -10, -5, 5, 10, 20].map(val => (
+                {(category === 'GROWTH' ? [-1, -0.5, -0.1, 0.1, 0.5, 1] : [-20, -10, -5, 5, 10, 20]).map(val => (
                   <button
                     key={val}
                     type="button"
@@ -351,18 +366,20 @@ export const AddRecordForm = () => {
                 ))}
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
-                {[30, 60, 90, 120, 150, 180, 210, 240].map(val => (
-                  <button
-                    key={val}
-                    type="button"
-                    onClick={() => setAmount(val.toString())}
-                    className="py-2.5 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 active:bg-gray-100"
-                  >
-                    {val}
-                  </button>
-                ))}
-              </div>
+              {category !== 'GROWTH' && (
+                <div className="grid grid-cols-4 gap-2">
+                  {[30, 60, 90, 120, 150, 180, 210, 240].map(val => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setAmount(val.toString())}
+                      className="py-2.5 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 active:bg-gray-100"
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -415,4 +432,5 @@ export const AddRecordForm = () => {
     </div>
   );
 };
+
 

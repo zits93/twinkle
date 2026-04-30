@@ -9,7 +9,8 @@ import {
   Utensils,
   Apple,
   Droplet,
-  GlassWater
+  GlassWater,
+  Scale
 } from 'lucide-react';
 import type { RecordEntry } from '@shared/types/record';
 import { format, differenceInMinutes } from 'date-fns';
@@ -30,6 +31,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   ACTIVITY: <Gamepad2 size={16} />,
   HEALTH: <Stethoscope size={16} />,
   CUSTOM: <Star size={16} />,
+  GROWTH: <Scale size={16} />,
 };
 
 const POO_COLORS: Record<string, string> = {
@@ -52,6 +54,7 @@ const categoryLabels: Record<string, string> = {
   ACTIVITY: '활동',
   HEALTH: '건강',
   CUSTOM: '기타',
+  GROWTH: '성장',
 };
 
 export const RecordItem = ({ record }: RecordItemProps) => {
@@ -66,6 +69,11 @@ export const RecordItem = ({ record }: RecordItemProps) => {
       const amount = record.value ? `${record.value}ml` : '';
       const type = record.subCategory && record.subCategory !== '기본' ? `(${record.subCategory})` : '';
       return `${label} ${amount} ${type}`.trim();
+    }
+
+    if (record.category === 'GROWTH') {
+      const unit = record.subCategory === '키' ? 'cm' : 'kg';
+      return `${record.subCategory} ${record.value}${unit}`;
     }
     
     if (record.category === 'SLEEP') {

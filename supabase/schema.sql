@@ -18,7 +18,7 @@ create table records (
   id uuid primary key default uuid_generate_v4(),
   baby_id uuid not null references babies(id) on delete cascade,
   user_id uuid not null,
-  category text not null check (category in ('feeding', 'sleep', 'diaper', 'activity', 'health', 'custom', 'solid', 'snack', 'water', 'milk')),
+  category text not null check (category in ('feeding', 'sleep', 'diaper', 'activity', 'health', 'custom', 'solid', 'snack', 'water', 'milk', 'growth')),
   sub_category text,
   value float,
   start_time timestamp with time zone not null,

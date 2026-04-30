@@ -4,37 +4,67 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer, 
-  BarChart,
-  Bar,
-  Legend
+  BarChart, 
+  Bar, 
+  Legend 
 } from 'recharts';
 import { GrowthChart } from '@features/view-growth-chart/ui/GrowthChart';
+import { useRecordStore } from '@entities/record';
+import { useBabyStore } from '@entities/baby';
+import { format, subDays, isSameDay, startOfDay } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 export const StatsPage = () => {
-  
-  // Mock data for Daily Feeding Amount
-  const feedingData = [
-    { day: '월', babyA: 850, babyB: 800 },
-    { day: '화', babyA: 900, babyB: 820 },
-    { day: '수', babyA: 880, babyB: 850 },
-    { day: '목', babyA: 920, babyB: 870 },
-    { day: '금', babyA: 950, babyB: 900 },
-    { day: '토', babyA: 820, babyB: 780 },
-    { day: '일', babyA: 890, babyB: 840 },
-  ];
+  const { records } = useRecordStore();
+  const { babies } = useBabyStore();
 
-  const babyAData = [
+  // Calculate Last 7 Days Feeding Trend
+  const feedingTrend = Array.from({ length: 7 }).map((_, i) => {
+    const date = subDays(new Date(), 6 - i);
+    const dayLabel = format(date, 'eee', { locale: ko });
+    
+    const dayData: any = { day: dayLabel };
+    
+    babies.forEach((baby, index) => {
+      const dailyTotal = records
+        .filter(r => 
+          r.babyId === baby.id && 
+          r.category === 'FEEDING' && 
+          isSameDay(new Date(r.startTime), date)
+        )
+        .reduce((sum, r) => sum + (r.value || 0), 0);
+      
+      const key = index === 0 ? 'babyA' : 'babyB';
+      dayData[key] = dailyTotal;
+      dayData[`${key}Name`] = baby.name;
+    });
+    
+    return dayData;
+  }).filter(d => babies.length > 0);
+
+  // Calculate Average Feeding (Last 7 days)
+  const getAverageFeeding = (babyId: string) => {
+    const feedingRecords = records.filter(r => 
+      r.babyId === babyId && 
+      r.category === 'FEEDING' && 
+      new Date(r.startTime) > subDays(new Date(), 7)
+    );
+    if (feedingRecords.length === 0) return 0;
+    const total = feedingRecords.reduce((sum, r) => sum + (r.value || 0), 0);
+    return Math.round(total / feedingRecords.length);
+  };
+
+  // Mock weight data for now (Weight recording feature is coming next)
+  const babyAWeightData = [
     { month: 0, weight: 3.2 },
     { month: 1, weight: 4.5 },
     { month: 2, weight: 5.8 },
-    { month: 3, weight: 6.7 },
   ];
 
-  const babyBData = [
+  const babyBWeightData = [
     { month: 0, weight: 3.0 },
     { month: 1, weight: 4.1 },
     { month: 2, weight: 5.2 },
-    { month: 3, weight: 6.1 },
   ];
 
   return (
@@ -43,11 +73,11 @@ export const StatsPage = () => {
 
       <div className="space-y-8">
         {/* Daily Feeding Chart */}
-        <div className="ios-glass p-6 h-[400px]">
+        <div className="ios-glass p-6 h-[400px] border border-white">
           <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">일간 총 수유량 추이</h3>
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={feedingData}>
+              <BarChart data={feedingTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false} />
                 <XAxis 
                   dataKey="day" 
@@ -55,59 +85,75 @@ export const StatsPage = () => {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
+                  tick={{ fontWeight: 600, fill: '#636366' }}
                 />
                 <YAxis 
                   stroke="rgba(0,0,0,0.3)" 
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
+                  tick={{ fontWeight: 600, fill: '#636366' }}
                 />
                 <Tooltip 
                   cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                   contentStyle={{ 
                     backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                    border: '0.5px solid rgba(0,0,0,0.05)', 
-                    borderRadius: '16px',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
+                    border: 'none', 
+                    borderRadius: '20px',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
                   }}
                   itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  labelStyle={{ fontWeight: 'bold', color: '#636366', marginBottom: '4px' }}
                 />
-                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="babyA" name="아기 A" fill="#30D158" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="babyB" name="아기 B" fill="#FF375F" radius={[8, 8, 0, 0]} />
+                <Legend 
+                  iconType="circle" 
+                  wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: 'bold' }} 
+                />
+                {babies[0] && (
+                  <Bar dataKey="babyA" name={babies[0].name} fill="#30D158" radius={[8, 8, 0, 0]} />
+                )}
+                {babies[1] && (
+                  <Bar dataKey="babyB" name={babies[1].name} fill="#FF375F" radius={[8, 8, 0, 0]} />
+                )}
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="space-y-6">
-          <GrowthChart 
-            gender="male" 
-            babyName="아기 A" 
-            babyData={babyAData} 
-          />
-
-          <GrowthChart 
-            gender="female" 
-            babyName="아기 B" 
-            babyData={babyBData} 
-          />
+          {babies.map((baby, idx) => (
+            <GrowthChart 
+              key={baby.id}
+              gender={baby.gender === 'F' ? 'female' : 'male'} 
+              babyName={baby.name} 
+              babyData={idx === 0 ? babyAWeightData : babyBWeightData} 
+            />
+          ))}
         </div>
         
-        <div className="ios-glass p-8">
-          <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">패턴 요약</h3>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="p-5 bg-green-50 rounded-2xl border border-green-100 shadow-sm">
-              <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">평균 수유량 (A)</span>
-              <p className="text-3xl font-black mt-2 text-[#1C1C1E]">160<span className="text-sm ml-1 text-gray-400">ml</span></p>
-            </div>
-            <div className="p-5 bg-pink-50 rounded-2xl border border-pink-100 shadow-sm">
-              <span className="text-[10px] font-black text-pink-500 uppercase tracking-widest">평균 수유량 (B)</span>
-              <p className="text-3xl font-black mt-2 text-[#1C1C1E]">140<span className="text-sm ml-1 text-gray-400">ml</span></p>
+        {babies.length > 0 && (
+          <div className="ios-glass p-8 border border-white">
+            <h3 className="text-lg font-bold mb-8 tracking-tight text-[#1C1C1E]">패턴 요약</h3>
+            <div className="grid grid-cols-2 gap-6">
+              {babies.map((baby, idx) => (
+                <div key={baby.id} className={`p-5 rounded-3xl border shadow-sm ${
+                  idx === 0 ? 'bg-green-50 border-green-100' : 'bg-pink-50 border-pink-100'
+                }`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${
+                    idx === 0 ? 'text-green-500' : 'text-pink-500'
+                  }`}>
+                    평균 수유량 ({baby.name})
+                  </span>
+                  <p className="text-3xl font-black mt-2 text-[#1C1C1E]">
+                    {getAverageFeeding(baby.id)}
+                    <span className="text-sm ml-1 text-gray-400">ml</span>
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
