@@ -75,11 +75,13 @@ export const Dashboard = () => {
     );
   };
 
+  const primaryColor = babies[0]?.colorTheme || '#30D158';
+
   if (isLoading) {
     return (
       <div className="py-24 text-center">
         <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
-          <div className="h-full bg-blue-500 w-1/2 animate-[loading_1.5s_infinite]" />
+          <div className="h-full w-1/2 animate-[loading_1.5s_infinite]" style={{ backgroundColor: primaryColor }} />
         </div>
       </div>
     );
@@ -99,7 +101,11 @@ export const Dashboard = () => {
           onClick={() => {
             window.dispatchEvent(new CustomEvent('changeTab', { detail: 'SETTINGS' }));
           }}
-          className="bg-blue-600 text-white rounded-2xl px-10 py-4 font-black flex items-center justify-center mx-auto space-x-3 shadow-xl shadow-blue-500/20 active:scale-95 transition-all"
+          className="text-white rounded-2xl px-10 py-4 font-black flex items-center justify-center mx-auto space-x-3 shadow-xl active:scale-95 transition-all"
+          style={{ 
+            backgroundColor: primaryColor,
+            boxShadow: `0 10px 25px ${primaryColor}40`
+          }}
         >
           <PlusCircle size={22} />
           <span>아기 등록하기</span>
@@ -122,7 +128,7 @@ export const Dashboard = () => {
             key={baby.id} 
             babyId={baby.id} 
             name={baby.name} 
-            color={baby.colorTheme === 'mint' ? '#30D158' : '#FF375F'} 
+            color={baby.colorTheme} 
           />
         ))}
       </div>

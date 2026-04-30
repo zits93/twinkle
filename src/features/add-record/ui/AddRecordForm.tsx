@@ -180,6 +180,9 @@ export const AddRecordForm = () => {
     return '';
   };
 
+  const currentBaby = babies.find(b => b.id === targetBaby) || babies[0];
+  const themeColor = currentBaby?.colorTheme || '#30D158';
+
   if (babies.length === 0) return null;
 
   return (
@@ -195,8 +198,9 @@ export const AddRecordForm = () => {
               type="button"
               onClick={() => setTargetBaby(baby.id)}
               className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${
-                targetBaby === baby.id ? 'bg-white text-black shadow-sm' : 'text-gray-400'
+                targetBaby === baby.id ? 'bg-white shadow-sm' : 'text-gray-400'
               }`}
+              style={{ color: targetBaby === baby.id ? themeColor : undefined }}
             >
               {baby.name}
             </button>
@@ -206,8 +210,9 @@ export const AddRecordForm = () => {
               type="button"
               onClick={() => setTargetBaby('BOTH')}
               className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${
-                targetBaby === 'BOTH' ? 'bg-white text-black shadow-sm' : 'text-gray-400'
+                targetBaby === 'BOTH' ? 'bg-white shadow-sm' : 'text-gray-400'
               }`}
+              style={{ color: targetBaby === 'BOTH' ? themeColor : undefined }}
             >
               둘 다
             </button>
@@ -216,30 +221,36 @@ export const AddRecordForm = () => {
 
         {/* Category Grid */}
         <div className="ios-glass p-3 grid grid-cols-5 gap-1 border border-white">
-          {CATEGORIES.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setCategory(item.id as RecordCategory)}
-              className="flex flex-col items-center py-2 group"
-            >
-              <div 
-                className={`w-10 h-10 rounded-xl flex items-center justify-center mb-1.5 transition-all ${
-                  category === item.id ? 'shadow-lg scale-110' : 'opacity-20 hover:opacity-40'
-                }`}
-                style={{ backgroundColor: category === item.id ? item.color : 'transparent' }}
+          {CATEGORIES.map((item) => {
+            const isActive = category === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setCategory(item.id as RecordCategory)}
+                className="flex flex-col items-center py-2 group"
               >
-                <div style={{ color: category === item.id ? 'white' : item.color }}>
-                  {item.icon}
+                <div 
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center mb-1.5 transition-all ${
+                    isActive ? 'shadow-lg scale-110' : 'opacity-20 hover:opacity-40'
+                  }`}
+                  style={{ 
+                    backgroundColor: isActive ? themeColor : 'transparent',
+                    boxShadow: isActive ? `0 8px 20px ${themeColor}40` : 'none'
+                  }}
+                >
+                  <div style={{ color: isActive ? 'white' : themeColor }}>
+                    {item.icon}
+                  </div>
                 </div>
-              </div>
-              <span className={`text-[9px] font-black tracking-tighter ${
-                category === item.id ? 'text-[#1C1C1E]' : 'text-gray-300'
-              }`}>
-                {item.label}
-              </span>
-            </button>
-          ))}
+                <span className={`text-[9px] font-black tracking-tighter ${
+                  isActive ? 'text-[#1C1C1E]' : 'text-gray-300'
+                }`}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Sub-Category Selector */}
@@ -250,8 +261,12 @@ export const AddRecordForm = () => {
               type="button"
               onClick={() => setSubCategory(type)}
               className={`px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                subCategory === type ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-400 border border-gray-50'
+                subCategory === type ? 'text-white shadow-md' : 'bg-white text-gray-400 border border-gray-50'
               }`}
+              style={{ 
+                backgroundColor: subCategory === type ? themeColor : undefined,
+                boxShadow: subCategory === type ? `0 4px 12px ${themeColor}30` : 'none'
+              }}
             >
               {type}
             </button>
@@ -270,7 +285,7 @@ export const AddRecordForm = () => {
 
         {/* Add Type Input Modal/Overlay */}
         {isAddingType && (
-          <div className="ios-glass p-4 border border-blue-100 bg-blue-50/30 animate-ios-in">
+          <div className="ios-glass p-4 border border-white animate-ios-in" style={{ backgroundColor: `${themeColor}05` }}>
             <div className="flex items-center space-x-2">
               <input 
                 type="text" 
@@ -279,11 +294,12 @@ export const AddRecordForm = () => {
                 value={newTypeName}
                 onChange={(e) => setNewTypeName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleAddType()}
-                className="flex-1 bg-white rounded-xl px-4 py-2.5 text-sm outline-none border border-blue-100"
+                className="flex-1 bg-white rounded-xl px-4 py-2.5 text-sm outline-none border border-gray-100"
               />
               <button 
                 onClick={handleAddType}
-                className="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg"
+                className="text-white p-2.5 rounded-xl shadow-lg"
+                style={{ backgroundColor: themeColor }}
               >
                 <Plus size={20} />
               </button>
@@ -327,8 +343,8 @@ export const AddRecordForm = () => {
                 />
               </div>
               {endTime && (
-                <div className="bg-blue-50/50 p-3 rounded-xl text-center">
-                  <span className="text-xs font-bold text-blue-600">{calculateDuration()}</span>
+                <div className="p-3 rounded-xl text-center" style={{ backgroundColor: `${themeColor}10` }}>
+                  <span className="text-xs font-bold" style={{ color: themeColor }}>{calculateDuration()}</span>
                 </div>
               )}
             </div>
@@ -347,7 +363,7 @@ export const AddRecordForm = () => {
                     className="bg-transparent text-right font-black text-4xl w-32 outline-none text-[#1C1C1E]"
                     placeholder="0"
                   />
-                  <span className="ml-2 font-bold text-blue-500">{getUnit()}</span>
+                  <span className="ml-2 font-bold" style={{ color: themeColor }}>{getUnit()}</span>
                 </div>
               </div>
               
@@ -357,9 +373,11 @@ export const AddRecordForm = () => {
                     key={val}
                     type="button"
                     onClick={() => handleAdjustAmount(val)}
-                    className={`py-2 rounded-xl text-[10px] font-black transition-all ${
-                      val > 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
-                    } active:scale-90`}
+                    className="py-2 rounded-xl text-[10px] font-black transition-all active:scale-90"
+                    style={{ 
+                      backgroundColor: val > 0 ? `${themeColor}10` : '#FFF0F0',
+                      color: val > 0 ? themeColor : '#FF3B30'
+                    }}
                   >
                     {val > 0 ? `+${val}` : val}
                   </button>
@@ -396,13 +414,14 @@ export const AddRecordForm = () => {
                   >
                     <div 
                       className={`w-8 h-8 rounded-full border-2 transition-transform ${
-                        pooColor === c.name ? 'border-blue-500 scale-125' : 'border-white'
-                      } shadow-sm`}
-                      style={{ backgroundColor: c.color }}
+                        pooColor === c.name ? 'scale-125 shadow-md' : 'border-white'
+                      }`}
+                      style={{ 
+                        backgroundColor: c.color,
+                        borderColor: pooColor === c.name ? themeColor : '#FFFFFF'
+                      }}
                     />
-                    <span className={`text-[8px] font-bold ${
-                      pooColor === c.name ? 'text-blue-500' : 'text-gray-300'
-                    }`}>
+                    <span className="text-[8px] font-bold" style={{ color: pooColor === c.name ? themeColor : '#D1D1D6' }}>
                       {c.name}
                     </span>
                   </button>
@@ -424,7 +443,11 @@ export const AddRecordForm = () => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg active:scale-[0.98] transition-transform shadow-xl shadow-blue-500/20"
+          className="w-full text-white py-4 rounded-2xl font-black text-lg active:scale-[0.98] transition-all shadow-xl"
+          style={{ 
+            backgroundColor: themeColor,
+            boxShadow: `0 12px 30px ${themeColor}40`
+          }}
         >
           기록 완료
         </button>

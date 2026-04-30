@@ -46,10 +46,12 @@ function App() {
     }
   }, [babies, initializeRecords, initializeSettings]);
 
+  const primaryColor = babies[0]?.colorTheme || '#30D158';
+
   if (isAuthLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#F2F2F7]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-black/5 border-t-blue-500" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-black/5" style={{ borderTopColor: primaryColor }} />
       </div>
     );
   }
@@ -62,7 +64,7 @@ function App() {
             <h1 className="text-6xl font-black tracking-tighter mb-4 bg-gradient-to-br from-black to-black/40 bg-clip-text text-transparent">
               Twinkle
             </h1>
-            <p className="text-blue-500 font-black uppercase tracking-widest text-[10px]">
+            <p className="font-black uppercase tracking-widest text-[10px]" style={{ color: primaryColor }}>
               Fresh Parenting Experience
             </p>
           </div>
@@ -73,13 +75,13 @@ function App() {
           {/* Header */}
           <header className="animate-ios-in text-center mb-10">
             <h1 className="text-3xl font-black tracking-tight mb-2">Twinkle ✨</h1>
-            <div className="w-8 h-1 bg-gradient-to-r from-blue-500 to-pink-500 rounded-full mx-auto" />
+            <div className="w-8 h-1 rounded-full mx-auto" style={{ backgroundColor: primaryColor }} />
           </header>
 
           <main className="relative">
             {isBabiesLoading ? (
               <div className="py-24 text-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-black/5 border-t-blue-500 mx-auto mb-6" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-black/5 mx-auto mb-6" style={{ borderTopColor: primaryColor }} />
                 <p className="text-gray-400 text-sm font-bold tracking-tight">정보를 동기화 중...</p>
               </div>
             ) : (
@@ -105,31 +107,35 @@ function App() {
                 { id: 'RECORD', icon: <Activity size={26} />, label: '기록' },
                 { id: 'STATS', icon: <PieChart size={26} />, label: '통계' },
                 { id: 'SETTINGS', icon: <Settings size={26} />, label: '설정' },
-              ].map((item) => (
-                <button 
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id as TabType)}
-                  className={`flex flex-col items-center min-w-[64px] transition-all duration-300 ${
-                    activeTab === item.id ? 'text-blue-500 scale-110' : 'text-gray-400'
-                  }`}
-                >
-                  <div className="mb-1.5 transition-transform duration-300">
-                    {item.icon}
-                  </div>
-                  <span className={`text-[10px] font-black tracking-tight ${activeTab === item.id ? 'opacity-100' : 'opacity-0'}`}>
-                    {item.label}
-                  </span>
-                  {activeTab === item.id && (
-                    <div className="w-1 h-1 bg-blue-500 rounded-full mt-1" />
-                  )}
-                </button>
-              ))}
+              ].map((item) => {
+                const isActive = activeTab === item.id;
+                return (
+                  <button 
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id as TabType)}
+                    className={`flex flex-col items-center min-w-[64px] transition-all duration-300 ${
+                      isActive ? 'scale-110' : 'text-gray-400'
+                    }`}
+                    style={{ color: isActive ? primaryColor : undefined }}
+                  >
+                    <div className="mb-1.5 transition-transform duration-300">
+                      {item.icon}
+                    </div>
+                    <span className={`text-[10px] font-black tracking-tight ${isActive ? 'opacity-100' : 'opacity-0'}`}>
+                      {item.label}
+                    </span>
+                    {isActive && (
+                      <div className="w-1 h-1 rounded-full mt-1" style={{ backgroundColor: primaryColor }} />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </nav>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export default App
