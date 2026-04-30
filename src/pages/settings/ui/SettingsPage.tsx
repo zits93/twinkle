@@ -8,7 +8,6 @@ import {
   Plus,
   Zap,
   Sparkles,
-  Settings2,
   Trash2
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
@@ -476,7 +475,6 @@ export const SettingsPage = () => {
                   className="flex-1 py-4 text-white font-black rounded-2xl shadow-xl transition-all"
                   style={{ 
                     backgroundColor: babyForm.colorTheme,
-                    shadowColor: babyForm.colorTheme,
                     boxShadow: `0 10px 25px ${babyForm.colorTheme}40`
                   }}
                 >

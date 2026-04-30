@@ -11,7 +11,7 @@ import {
 import { GrowthChart } from '@features/view-growth-chart/ui/GrowthChart';
 import { useRecordStore } from '@entities/record';
 import { useBabyStore } from '@entities/baby';
-import { format, subDays, isSameDay, startOfDay } from 'date-fns';
+import { format, subDays, isSameDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
 export const StatsPage = () => {
@@ -40,7 +40,7 @@ export const StatsPage = () => {
     });
     
     return dayData;
-  }).filter(d => babies.length > 0);
+  }).filter(() => babies.length > 0);
 
   // Calculate Average Feeding (Last 7 days)
   const getAverageFeeding = (babyId: string) => {
@@ -54,18 +54,6 @@ export const StatsPage = () => {
     return Math.round(total / feedingRecords.length);
   };
 
-  // Mock weight data for now (Weight recording feature is coming next)
-  const babyAWeightData = [
-    { month: 0, weight: 3.2 },
-    { month: 1, weight: 4.5 },
-    { month: 2, weight: 5.8 },
-  ];
-
-  const babyBWeightData = [
-    { month: 0, weight: 3.0 },
-    { month: 1, weight: 4.1 },
-    { month: 2, weight: 5.2 },
-  ];
 
   return (
     <div className="animate-ios-in space-y-8 pb-10">

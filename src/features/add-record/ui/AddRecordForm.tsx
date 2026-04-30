@@ -11,10 +11,8 @@ import {
   Droplet,
   Clock,
   Plus,
-  Minus,
   X,
-  Scale,
-  Ruler
+  Scale
 } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
 import { useBabyStore } from '@entities/baby';

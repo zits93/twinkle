@@ -4,7 +4,7 @@ export interface UserSettings {
   baby_id: string;
   feeding_interval: number;
   mute_during_night: boolean;
-  custom_categories: string[];
+  custom_categories: any;
 }
 
 export const userSettingsService = {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   X,
   Trash2,
@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
 import type { RecordEntry } from '@shared/types/record';
-import { format } from 'date-fns';
 
 interface EditRecordModalProps {
   record: RecordEntry;
@@ -26,7 +25,7 @@ const POO_COLORS = [
 export const EditRecordModal = ({ record, onClose }: EditRecordModalProps) => {
   const { updateRecord, deleteRecord } = useRecordStore();
   
-  const [subCategory, setSubCategory] = useState(record.subCategory);
+  const [subCategory] = useState(record.subCategory);
   const [amount, setAmount] = useState(record.value?.toString() || '');
   const [note, setNote] = useState(record.note || '');
   const [startTime, setStartTime] = useState(() => {
