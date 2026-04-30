@@ -27,13 +27,13 @@ export const useRecordStore = create<RecordState>((set, get) => ({
         const { eventType, new: newRecord, old: oldRecord } = payload;
         const currentRecords = get().records;
 
-        if (eventType === 'INSERT') {
+        if (eventType === 'INSERT' && newRecord) {
           set({ records: [newRecord as RecordEntry, ...currentRecords] });
-        } else if (eventType === 'UPDATE') {
+        } else if (eventType === 'UPDATE' && newRecord) {
           set({
             records: currentRecords.map((r) => r.id === newRecord.id ? (newRecord as RecordEntry) : r)
           });
-        } else if (eventType === 'DELETE') {
+        } else if (eventType === 'DELETE' && oldRecord) {
           set({
             records: currentRecords.filter((r) => r.id !== oldRecord.id)
           });

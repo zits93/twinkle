@@ -35,7 +35,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       });
 
       // Listen for auth changes
-      supabase.auth.onAuthStateChange((_event: any, session: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
+      supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
         set({ 
           session, 
           user: session?.user ?? null,

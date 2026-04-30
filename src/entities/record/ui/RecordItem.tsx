@@ -112,11 +112,11 @@ export const RecordItem = ({ record, shortName }: RecordItemProps) => {
             {record.isDual && (
               <span className="text-[9px] font-black bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-md border border-blue-100 uppercase">Dual</span>
             )}
-            {record.category === 'DIAPER' && record.subCategory === '대변' && record.metadata?.pooColor && (
+            {record.category === 'DIAPER' && record.subCategory === '대변' && typeof record.metadata?.pooColor === 'string' && (
               <div 
                 className="w-3 h-3 rounded-full border border-gray-100 shadow-sm" 
-                style={{ backgroundColor: POO_COLORS[record.metadata.pooColor] }}
-                title={record.metadata.pooColor}
+                style={{ backgroundColor: POO_COLORS[String(record.metadata.pooColor)] }}
+                title={String(record.metadata.pooColor)}
               />
             )}
           </div>

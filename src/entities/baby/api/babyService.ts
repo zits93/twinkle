@@ -93,7 +93,7 @@ export const babyService = {
 
     if (error) throw error;
     if (!data || data.length === 0) throw new Error('아기 생성에 실패했습니다.');
-    return mapToEntity(data[0] as BabyRow);
+    return mapToEntity(data[0] as any);
   },
 
   async updateBaby(babyId: string, updates: Partial<BabyProfile>) {
