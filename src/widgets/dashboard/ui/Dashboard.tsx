@@ -1,6 +1,7 @@
-import { Box, Typography, Stack, Grid2 as Grid, Paper, IconButton, Chip } from '@mui/material';
-import { Baby, Clock, Milk, Moon, Droplets, ChevronRight } from 'lucide-react';
+import { Box, Typography, Stack, Grid2 as Grid, Paper, IconButton, Chip, Alert } from '@mui/material';
+import { Baby, Clock, Milk, Moon, Droplets, ChevronRight, AlertCircle } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
+import { useFeedingStatus } from '@features/notify-feeding';
 import { format, differenceInMinutes } from 'date-fns';
 
 export const Dashboard = () => {
@@ -16,6 +17,7 @@ export const Dashboard = () => {
     const lastFeed = getLatestRecord(babyId, 'FEEDING');
     const lastSleep = getLatestRecord(babyId, 'SLEEP');
     const lastDiaper = getLatestRecord(babyId, 'DIAPER');
+    const { status, minutesLeft } = useFeedingStatus(babyId);
 
     const minutesSinceFeed = lastFeed 
       ? differenceInMinutes(new Date(), new Date(lastFeed.startTime)) 
@@ -27,6 +29,15 @@ export const Dashboard = () => {
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{name}</Typography>
           <Baby size={18} color={color} />
         </Stack>
+
+        {(status === 'HUNGRY' || status === 'OVERDUE') && (
+          <Box sx={{ mb: 2, p: 1, bgcolor: status === 'OVERDUE' ? 'rgba(239, 83, 80, 0.1)' : 'rgba(255, 167, 38, 0.1)', borderRadius: 1, display: 'flex', alignItems: 'center' }}>
+            <AlertCircle size={14} color={status === 'OVERDUE' ? '#ef5350' : '#ffa726'} style={{ marginRight: 6 }} />
+            <Typography variant="caption" sx={{ color: status === 'OVERDUE' ? '#ef5350' : '#ffa726', fontWeight: 'bold' }}>
+              {status === 'OVERDUE' ? '수유 시간 지남' : '곧 수유 시간'}
+            </Typography>
+          </Box>
+        )}
 
         <Stack spacing={1.5}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
