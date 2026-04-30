@@ -58,14 +58,18 @@ export const AddRecordForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const now = new Date();
+    const hour = now.getHours();
+    const isNightTime = hour >= 20 || hour < 6;
+
     const baseRecord = {
       userId: 'user-1', // Mock user
       category,
-      subCategory: subCategory || (category === 'SLEEP' ? 'NAP' : '기본'),
+      subCategory: subCategory || (category === 'SLEEP' ? (isNightTime ? 'NIGHT' : 'NAP') : '기본'),
       value: amount ? parseFloat(amount) : undefined,
-      startTime: new Date().toISOString(),
+      startTime: now.toISOString(),
       note,
-      createdAt: new Date().toISOString(),
+      createdAt: now.toISOString(),
     };
 
     if (targetBaby === 'BOTH') {
