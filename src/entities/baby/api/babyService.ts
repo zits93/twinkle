@@ -93,5 +93,33 @@ export const babyService = {
     if (error) throw error;
     if (!data || data.length === 0) throw new Error('아기 생성에 실패했습니다.');
     return mapToEntity(data[0]);
+  },
+
+  async updateBaby(babyId: string, updates: Partial<BabyProfile>) {
+    const dbUpdates: any = {};
+    if (updates.name) dbUpdates.name = updates.name;
+    if (updates.birthDate) dbUpdates.birth_date = updates.birthDate;
+    if (updates.gender) dbUpdates.gender = updates.gender === 'M' ? 'boy' : 'girl';
+    if (updates.colorTheme) dbUpdates.color_theme = updates.colorTheme;
+    if (updates.profileImageUrl !== undefined) dbUpdates.profile_image_url = updates.profileImageUrl;
+
+    const { data, error } = await supabase
+      .from('babies')
+      .update(dbUpdates)
+      .eq('id', babyId)
+      .select();
+
+    if (error) throw error;
+    if (!data || data.length === 0) throw new Error('아기 정보 수정에 실패했습니다.');
+    return mapToEntity(data[0]);
+  },
+
+  async deleteBaby(babyId: string) {
+    const { error } = await supabase
+      .from('babies')
+      .delete()
+      .eq('id', babyId);
+
+    if (error) throw error;
   }
 };

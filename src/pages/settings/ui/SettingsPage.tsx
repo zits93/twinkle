@@ -8,7 +8,8 @@ import {
   Plus,
   Zap,
   Sparkles,
-  Settings2
+  Settings2,
+  Trash2
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useUserSettingsStore } from '@entities/user-settings';
@@ -19,9 +20,10 @@ import { babyService } from '@entities/baby/api/babyService';
 import { supabase } from '@shared/api/supabase';
 import { Edit2 } from 'lucide-react';
 import { differenceInMinutes } from 'date-fns';
+import type { BabyProfile } from '@shared/types/record';
 
 export const SettingsPage = () => {
-  const { babies, initializeBabies } = useBabyStore();
+  const { babies, initializeBabies, updateBaby, deleteBaby } = useBabyStore();
   const { records } = useRecordStore();
   const firstBabyId = babies[0]?.id;
 
@@ -38,7 +40,10 @@ export const SettingsPage = () => {
   const { user, signOut } = useSessionStore();
 
   const [isAddBabyOpen, setIsAddBabyOpen] = useState(false);
-  const [newBaby, setNewBaby] = useState({
+  const [isEditBabyOpen, setIsEditBabyOpen] = useState(false);
+  const [editingBabyId, setEditingBabyId] = useState<string | null>(null);
+
+  const [babyForm, setBabyForm] = useState({
     name: '',
     birthDate: new Date().toISOString().split('T')[0],
     gender: 'M' as 'M' | 'F',
@@ -71,25 +76,65 @@ export const SettingsPage = () => {
     return Math.round(avg / 10) * 10; // Round to 10 mins
   }, [records, firstBabyId]);
 
+  const handleOpenAddBaby = () => {
+    setBabyForm({
+      name: '',
+      birthDate: new Date().toISOString().split('T')[0],
+      gender: 'M',
+      colorTheme: 'mint'
+    });
+    setIsAddBabyOpen(true);
+  };
+
+  const handleOpenEditBaby = (baby: BabyProfile) => {
+    setEditingBabyId(baby.id);
+    setBabyForm({
+      name: baby.name,
+      birthDate: new Date(baby.birthDate).toISOString().split('T')[0],
+      gender: baby.gender,
+      colorTheme: baby.colorTheme
+    });
+    setIsEditBabyOpen(true);
+  };
+
   const handleAddBaby = async () => {
-    if (!newBaby.name) return;
+    if (!babyForm.name) return;
     try {
       await babyService.createBaby({
-        name: newBaby.name,
-        birthDate: new Date(newBaby.birthDate).toISOString(),
-        gender: newBaby.gender,
-        colorTheme: newBaby.colorTheme,
+        name: babyForm.name,
+        birthDate: new Date(babyForm.birthDate).toISOString(),
+        gender: babyForm.gender,
+        colorTheme: babyForm.colorTheme,
       });
       await initializeBabies();
       setIsAddBabyOpen(false);
-      setNewBaby({
-        name: '',
-        birthDate: new Date().toISOString().split('T')[0],
-        gender: 'M',
-        colorTheme: 'mint'
-      });
     } catch (err) {
       console.error('아기 등록 실패:', err);
+    }
+  };
+
+  const handleUpdateBaby = async () => {
+    if (!editingBabyId || !babyForm.name) return;
+    try {
+      await updateBaby(editingBabyId, {
+        name: babyForm.name,
+        birthDate: new Date(babyForm.birthDate).toISOString(),
+        gender: babyForm.gender,
+        colorTheme: babyForm.colorTheme,
+      });
+      setIsEditBabyOpen(false);
+    } catch (err) {
+      console.error('아기 수정 실패:', err);
+    }
+  };
+
+  const handleDeleteBaby = async () => {
+    if (!editingBabyId || !window.confirm('정말 삭제하시겠습니까? 관련 기록이 모두 삭제됩니다.')) return;
+    try {
+      await deleteBaby(editingBabyId);
+      setIsEditBabyOpen(false);
+    } catch (err) {
+      console.error('아기 삭제 실패:', err);
     }
   };
 
@@ -138,7 +183,7 @@ export const SettingsPage = () => {
         <div className="flex justify-between items-center mb-3 px-1">
           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">아기 설정</span>
           <button 
-            onClick={() => setIsAddBabyOpen(true)}
+            onClick={handleOpenAddBaby}
             className="text-xs font-bold text-blue-500 flex items-center space-x-1"
           >
             <Plus size={14} />
@@ -153,7 +198,11 @@ export const SettingsPage = () => {
             </div>
           ) : (
             babies.map((baby) => (
-              <div key={baby.id} className="p-4 flex items-center justify-between active:bg-gray-50 transition-colors">
+              <div 
+                key={baby.id} 
+                onClick={() => handleOpenEditBaby(baby)}
+                className="p-4 flex items-center justify-between active:bg-gray-50 transition-colors cursor-pointer"
+              >
                 <div className="flex items-center space-x-4">
                   <div 
                     className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
@@ -333,19 +382,32 @@ export const SettingsPage = () => {
         </button>
       </div>
 
-      {/* Custom iOS Modal - Light */}
-      {isAddBabyOpen && (
+      {/* Add/Edit Baby Modal */}
+      {(isAddBabyOpen || isEditBabyOpen) && (
         <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setIsAddBabyOpen(false)} />
-          <div className="w-full max-w-md p-6 relative animate-ios-in rounded-t-[32px] sm:rounded-[32px] bg-white shadow-2xl">
-            <h3 className="text-xl font-black mb-6 text-[#1C1C1E]">새 아기 등록</h3>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => { setIsAddBabyOpen(false); setIsEditBabyOpen(false); }} />
+          <div className="w-full max-w-md p-6 relative animate-ios-in rounded-t-[32px] sm:rounded-[32px] bg-white shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-[#1C1C1E]">
+                {isAddBabyOpen ? '새 아기 등록' : '아기 정보 수정'}
+              </h3>
+              {isEditBabyOpen && (
+                <button 
+                  onClick={handleDeleteBaby}
+                  className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center"
+                >
+                  <Trash2 size={18} />
+                </button>
+              )}
+            </div>
+            
             <div className="space-y-6">
               <div className="space-y-1">
                 <label className="text-[11px] font-black text-gray-400 uppercase ml-1">이름</label>
                 <input 
                   type="text" 
-                  value={newBaby.name}
-                  onChange={(e) => setNewBaby({...newBaby, name: e.target.value})}
+                  value={babyForm.name}
+                  onChange={(e) => setBabyForm({...babyForm, name: e.target.value})}
                   className="w-full bg-gray-50 rounded-2xl p-4 text-[#1C1C1E] outline-none border border-gray-100"
                 />
               </div>
@@ -353,8 +415,8 @@ export const SettingsPage = () => {
                 <label className="text-[11px] font-black text-gray-400 uppercase ml-1">생년월일</label>
                 <input 
                   type="date" 
-                  value={newBaby.birthDate}
-                  onChange={(e) => setNewBaby({...newBaby, birthDate: e.target.value})}
+                  value={babyForm.birthDate}
+                  onChange={(e) => setBabyForm({...babyForm, birthDate: e.target.value})}
                   className="w-full bg-gray-50 rounded-2xl p-4 text-[#1C1C1E] outline-none border border-gray-100"
                 />
               </div>
@@ -363,12 +425,12 @@ export const SettingsPage = () => {
                   <span className="text-[11px] font-black text-gray-400 uppercase ml-1">성별</span>
                   <div className="flex p-1 bg-gray-50 rounded-xl space-x-1">
                     <button 
-                      onClick={() => setNewBaby({...newBaby, gender: 'M'})}
-                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${newBaby.gender === 'M' ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-400'}`}
+                      onClick={() => setBabyForm({...babyForm, gender: 'M'})}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${babyForm.gender === 'M' ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-400'}`}
                     >남아</button>
                     <button 
-                      onClick={() => setNewBaby({...newBaby, gender: 'F'})}
-                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${newBaby.gender === 'F' ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-400'}`}
+                      onClick={() => setBabyForm({...babyForm, gender: 'F'})}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${babyForm.gender === 'F' ? 'bg-white text-blue-500 shadow-sm' : 'text-gray-400'}`}
                     >여아</button>
                   </div>
                 </div>
@@ -377,15 +439,15 @@ export const SettingsPage = () => {
                 <span className="text-[11px] font-black text-gray-400 uppercase ml-1">테마 색상</span>
                 <div className="flex space-x-4">
                   <button 
-                    onClick={() => setNewBaby({...newBaby, colorTheme: 'mint'})}
-                    className={`flex-1 p-4 rounded-2xl border-2 transition-all ${newBaby.colorTheme === 'mint' ? 'border-[#30D158] bg-[#30D158]/5' : 'border-transparent bg-gray-50'}`}
+                    onClick={() => setBabyForm({...babyForm, colorTheme: 'mint'})}
+                    className={`flex-1 p-4 rounded-2xl border-2 transition-all ${babyForm.colorTheme === 'mint' ? 'border-[#30D158] bg-[#30D158]/5' : 'border-transparent bg-gray-50'}`}
                   >
                     <div className="w-full h-2 bg-[#30D158] rounded-full mb-2" />
                     <span className="text-[10px] font-bold text-gray-400 uppercase">Mint (A)</span>
                   </button>
                   <button 
-                    onClick={() => setNewBaby({...newBaby, colorTheme: 'coral'})}
-                    className={`flex-1 p-4 rounded-2xl border-2 transition-all ${newBaby.colorTheme === 'coral' ? 'border-[#FF375F] bg-[#FF375F]/5' : 'border-transparent bg-gray-50'}`}
+                    onClick={() => setBabyForm({...babyForm, colorTheme: 'coral'})}
+                    className={`flex-1 p-4 rounded-2xl border-2 transition-all ${babyForm.colorTheme === 'coral' ? 'border-[#FF375F] bg-[#FF375F]/5' : 'border-transparent bg-gray-50'}`}
                   >
                     <div className="w-full h-2 bg-[#FF375F] rounded-full mb-2" />
                     <span className="text-[10px] font-bold text-gray-400 uppercase">Coral (B)</span>
@@ -394,13 +456,15 @@ export const SettingsPage = () => {
               </div>
               <div className="flex space-x-3 pt-6">
                 <button 
-                  onClick={() => setIsAddBabyOpen(false)}
+                  onClick={() => { setIsAddBabyOpen(false); setIsEditBabyOpen(false); }}
                   className="flex-1 py-4 font-bold text-gray-400"
                 >취소</button>
                 <button 
-                  onClick={handleAddBaby}
+                  onClick={isAddBabyOpen ? handleAddBaby : handleUpdateBaby}
                   className="flex-1 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20"
-                >등록하기</button>
+                >
+                  {isAddBabyOpen ? '등록하기' : '저장하기'}
+                </button>
               </div>
             </div>
           </div>
