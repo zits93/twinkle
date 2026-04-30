@@ -105,10 +105,40 @@ Twinkle is a specialized parenting record application designed specifically for 
 
 ---
 
-## 향후 로드맵
+## 현재 진행 상황 (Progress) - 2026.04
 
-1.  **1단계**: 환경 설정 (Vite + Supabase) 및 기본 DB 스키마 구축.
-2.  **2단계**: 기록 폼 UI 및 '원클릭 듀얼 기록' 로직 구현.
-3.  **3단계**: 통합 대시보드 및 실시간 동기화.
-4.  **4단계**: 성장 곡선 및 통계 시각화 (Recharts 연동).
-5.  **5단계**: 스마트 알림 및 PWA 최종 폴리싱.
+### ✅ 완료된 작업 (Completed)
+- **프로젝트 초기 설정**: Vite, React, TypeScript 기반 FSD(Feature-Sliced Design) 아키텍처 구축.
+- **UI/UX 시스템**: Tailwind CSS v4 + MUI 조합으로 다크 모드 및 Glassmorphism 기반 프리미엄 UI 뼈대 완성.
+- **상태 관리**: Zustand를 이용한 로컬 상태(메모리 기반) 관리 로직 및 아기 프로필 스토어 구현.
+- **기록 기능 (`AddRecordForm`)**: '원클릭 듀얼 기록' 지원, 수유(분유/모유/유축 등), 수면, 기저귀, 활동(목욕/터미타임), 건강(체온/약), 커스텀 카테고리 지원.
+- **자동 수면 인식**: 밤 8시 ~ 아침 6시 기록 시 자동으로 '밤잠' 분류.
+- **대시보드 (`Dashboard`)**: 아기별 요약 상태(마지막 수유/수면/기저귀), 쌍둥이 싱크 상태 시각화.
+- **타임라인 (`RecordTimeline`)**: A, B 아기별 필터링이 가능한 히스토리 뷰.
+- **통계 및 성장 시각화 (`StatsPage`, `GrowthChart`)**: Recharts를 이용한 일간 수유량 바 차트 및 WHO/KCDC 기준 백분위수 체중 성장 곡선 차트 구현.
+- **스마트 배고픔 알림 (`useFeedingStatus`)**: 마지막 수유 시간 기준 주기 경과 여부 UI 표시 (밤잠 중 무음 처리 로직 포함).
+- **프로젝트 인프라**: GitHub Actions 기반 CI (Lint & Build) 및 GitHub Pages 자동 배포 파이프라인 구축. Issue/PR 템플릿 적용 완료.
+
+### 🚧 진행 중 / 대기 중인 작업 (Pending)
+- **Supabase 백엔드 연동**: 실제 DB 생성 및 Zustand 로컬 상태를 Supabase Realtime으로 교체.
+- **사용자 설정 페이지**: 수유 간격(예: 3시간, 4시간) 및 커스텀 카테고리 직접 추가/수정 기능.
+- **PWA 및 모바일 최적화**: Web App Manifest 설정 및 Service Worker를 통한 백그라운드 푸시 알림 (실제 앱처럼 동작하도록).
+- **UI 폴리싱**: 스와이프 제스처를 이용한 탭 전환, 각 동작에 따른 마이크로 애니메이션 강화.
+
+---
+
+## 향후 로드맵 (Refined)
+
+1.  **Phase 5: 데이터 영속성 및 동기화 (Supabase 연동)**
+    - Supabase 프로젝트 생성 및 SQL 스키마 적용 (Auth, Database).
+    - Zustand 스토어를 Supabase 클라이언트와 연동하여 읽기/쓰기 구현.
+    - 공동 양육자 초대(Family ID 공유) 및 Realtime 기반 대시보드 자동 갱신.
+2.  **Phase 6: 맞춤 설정 고도화 (Settings)**
+    - 환경 설정 탭 구현: 밤잠 기준 시간 설정, 수유 간격 주기 변경.
+    - 테마 색상(A아기, B아기) 커스터마이징 기능.
+3.  **Phase 7: PWA 및 실제 알림 (Push Notifications)**
+    - PWA Manifest 작성 (모바일 홈 화면 추가 최적화).
+    - Service Worker를 활용하여 웹 브라우저가 닫혀 있어도 주기가 지나면 푸시 알림 발송.
+4.  **Phase 8: 베타 테스트 및 폴리싱**
+    - 모바일 환경(iOS Safari, Android Chrome)에서의 터치 및 스크롤 최적화.
+    - App Store / Play Store 등록을 위한 TWA(Trusted Web Activity) 패키징 고려.
