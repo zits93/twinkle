@@ -395,7 +395,7 @@ export const SettingsPage = () => {
 
       {/* Add/Edit Baby Modal */}
       {(isAddBabyOpen || isEditBabyOpen) && (
-        <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4">
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => { setIsAddBabyOpen(false); setIsEditBabyOpen(false); }} />
           <div className="w-full max-w-md p-6 relative animate-ios-in rounded-t-[32px] sm:rounded-[32px] bg-white shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center mb-6">
@@ -488,7 +488,7 @@ export const SettingsPage = () => {
 
       {/* Edit Name Modal */}
       {isEditNameOpen && (
-        <div className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4">
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setIsEditNameOpen(false)} />
           <div className="w-full max-w-md p-6 relative animate-ios-in rounded-t-[32px] sm:rounded-[32px] bg-white shadow-2xl">
             <h3 className="text-xl font-black mb-6 text-[#1C1C1E]">이름 변경</h3>

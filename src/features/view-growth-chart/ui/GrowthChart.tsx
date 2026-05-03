@@ -100,6 +100,7 @@ export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthCh
             <Area 
               type="monotone" 
               dataKey="p97" 
+              name="상위 3%"
               stroke="none" 
               fill="rgba(142, 142, 147, 0.05)" 
               connectNulls
@@ -107,6 +108,7 @@ export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthCh
             <Area 
               type="monotone" 
               dataKey="p3" 
+              name="하위 3%"
               stroke="none" 
               fill="#FFFFFF" 
               connectNulls
@@ -118,7 +120,7 @@ export const GrowthChart = ({ gender, babyData, babyName, colorTheme }: GrowthCh
               stroke="rgba(142, 142, 147, 0.2)"
               strokeDasharray="4 4"
               fill="none"
-              name="표준(50%)"
+              name="표준 50%"
               connectNulls
             />
             

@@ -34,7 +34,7 @@ export const RecordTimeline = () => {
             className={`px-3 py-1.5 text-[11px] font-bold rounded-xl transition-all ${
               viewMode === 'ALL' ? 'bg-white text-black shadow-sm' : 'text-gray-400'
             }`}
-          >전체</button>
+          >둘 다</button>
           {babies.map(baby => (
             <button
               key={baby.id}

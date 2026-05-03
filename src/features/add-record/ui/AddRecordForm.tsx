@@ -189,6 +189,18 @@ export const AddRecordForm = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Baby Selector */}
         <div className="bg-gray-100 p-1 rounded-2xl flex space-x-1">
+          {babies.length === 2 && (
+            <button
+              type="button"
+              onClick={() => setTargetBaby('BOTH')}
+              className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${
+                targetBaby === 'BOTH' ? 'bg-white shadow-sm' : 'text-gray-400'
+              }`}
+              style={{ color: targetBaby === 'BOTH' ? themeColor : undefined }}
+            >
+              둘 다
+            </button>
+          )}
           {babies.map((baby) => (
             <button
               key={baby.id}
@@ -202,18 +214,6 @@ export const AddRecordForm = () => {
               {baby.name}
             </button>
           ))}
-          {babies.length === 2 && (
-            <button
-              type="button"
-              onClick={() => setTargetBaby('BOTH')}
-              className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${
-                targetBaby === 'BOTH' ? 'bg-white shadow-sm' : 'text-gray-400'
-              }`}
-              style={{ color: targetBaby === 'BOTH' ? themeColor : undefined }}
-            >
-              둘 다
-            </button>
-          )}
         </div>
 
         {/* Category Grid */}

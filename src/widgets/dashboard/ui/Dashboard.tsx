@@ -133,35 +133,6 @@ export const Dashboard = () => {
         ))}
       </div>
 
-      {/* Grouped Info Section */}
-      <div className="mb-4 ml-1">
-        <span className="text-[11px] font-black text-gray-300 uppercase tracking-widest">인텔리전트 분석</span>
-      </div>
-      <div className="ios-glass overflow-hidden divide-y divide-gray-50">
-        <div className="p-5 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shadow-sm">
-              <Clock size={20} className="text-green-500" />
-            </div>
-            <div>
-              <p className="text-sm font-black text-[#1C1C1E]">패턴 안정도</p>
-              <p className="text-[11px] text-gray-400 font-bold">아이들의 리듬이 안정적으로 유지되고 있습니다.</p>
-            </div>
-          </div>
-          <div className="bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
-            <span className="text-[10px] font-black text-green-500">EXCELLENT</span>
-          </div>
-        </div>
-        <div className="p-5 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shadow-sm">
-              <AlertCircle size={20} className="text-orange-500" />
-            </div>
-            <p className="text-sm font-black text-[#1C1C1E]">다음 예상 일정</p>
-          </div>
-          <span className="text-xs text-gray-400 font-black">분석 중</span>
-        </div>
-      </div>
     </div>
   );
 };
