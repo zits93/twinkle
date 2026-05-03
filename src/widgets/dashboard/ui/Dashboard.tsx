@@ -1,4 +1,4 @@
-import { Baby, Clock, Milk, Moon, Droplets, AlertCircle, PlusCircle, ChevronRight } from 'lucide-react';
+import { Baby, Milk, Moon, Droplets, AlertCircle, PlusCircle, ChevronRight } from 'lucide-react';
 import { useRecordStore } from '@entities/record';
 import { useBabyStore } from '@entities/baby';
 import { useFeedingStatus } from '@features/notify-feeding';

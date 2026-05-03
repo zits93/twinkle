@@ -161,6 +161,7 @@ export const StatsPage = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
         
         {/* Daily Sleep Chart */}
         <div className="ios-glass p-6 h-[400px] border border-white">
